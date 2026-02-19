@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  workouts  Workout[]
+  settings  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Workout {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  exercises   Exercise[]
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  isPublic    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Exercise {
+  id              String   @id @default(cuid())
+  name            String
+  workDuration    Int      @default(30)
+  restDuration    Int      @default(10)
+  sets            Int      @default(1)
+  restBetweenSets Int      @default(60)
+  order           Int
+  workout         Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  workoutId       String
+}

@@ -1,0 +1,68 @@
+import { useTimerStore } from '@/lib/timer/store'
+import { TimerPhase } from '@/lib/timer/types'
+
+const phaseColors: Record<TimerPhase, string> = {
+  idle: 'bg-gray-900',
+  countdown: 'bg-yellow-500',
+  work: 'bg-green-500',
+  rest: 'bg-red-500',
+  restBetweenSets: 'bg-orange-500',
+  complete: 'bg-blue-500',
+}
+
+const phaseLabels: Record<TimerPhase, string> = {
+  idle: 'Ready',
+  countdown: 'Get Ready',
+  work: 'Work',
+  rest: 'Rest',
+  restBetweenSets: 'Rest Between Sets',
+  complete: 'Complete!',
+}
+
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+export default function TimerDisplay() {
+  const { phase, timeRemaining, workout, currentExerciseIndex, currentSet } =
+    useTimerStore()
+
+  const currentExercise = workout?.exercises[currentExerciseIndex]
+
+  return (
+    <div
+      className={`min-h-screen flex flex-col items-center justify-center ${phaseColors[phase]} transition-colors duration-500`}
+    >
+      <div className="text-center text-white">
+        {phase === 'complete' ? (
+          <div>
+            <h1 className="text-6xl font-bold mb-4">Workout Complete!</h1>
+            <p className="text-2xl">Great job!</p>
+          </div>
+        ) : (
+          <>
+            <p className="text-2xl font-medium mb-4 opacity-90">
+              {phaseLabels[phase]}
+            </p>
+
+            <p className="text-4xl font-medium mb-2 opacity-90">
+              {currentExercise?.name || 'Exercise'}
+            </p>
+
+            {currentExercise && (
+              <p className="text-xl mb-8 opacity-75">
+                Set {currentSet} of {currentExercise.sets}
+              </p>
+            )}
+
+            <p className="text-[12rem] font-bold leading-none tabular-nums">
+              {formatTime(timeRemaining)}
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
