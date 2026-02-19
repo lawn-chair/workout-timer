@@ -3,7 +3,7 @@ import { Workout, WorkoutFormData } from './types'
 export type { Workout, WorkoutFormData }
 
 export async function fetchWorkouts(): Promise<Workout[]> {
-  const response = await fetch('/api/workouts')
+  const response = await fetch('/api/workouts', { cache: 'no-store' })
   if (!response.ok) {
     throw new Error('Failed to fetch workouts')
   }
@@ -11,7 +11,7 @@ export async function fetchWorkouts(): Promise<Workout[]> {
 }
 
 export async function fetchWorkout(id: string): Promise<Workout> {
-  const response = await fetch(`/api/workouts/${id}`)
+  const response = await fetch(`/api/workouts/${id}`, { cache: 'no-store' })
   if (!response.ok) {
     throw new Error('Failed to fetch workout')
   }

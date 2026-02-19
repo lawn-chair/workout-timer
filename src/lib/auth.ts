@@ -4,27 +4,40 @@ import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/db'
 
-const providers: NextAuthOptions['providers'] = [
-  GoogleProvider({
-    clientId: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  }),
-]
+const devAuthEnabled =
+  process.env.NODE_ENV === 'development' ||
+  process.env.E2E_TESTING === 'true' ||
+  process.env.DEV_AUTH === 'true'
 
-if (process.env.E2E_TESTING === 'true') {
+const providers: NextAuthOptions['providers'] = []
+
+if (devAuthEnabled) {
   providers.push(
     CredentialsProvider({
-      name: 'Test Credentials',
+      name: 'Dev Credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
       },
       async authorize(credentials) {
-        if (!credentials?.email) return null
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        const email = credentials?.email?.trim().toLowerCase()
+        if (!email) return null
+        const user = await prisma.user.upsert({
+          where: { email },
+          update: {},
+          create: {
+            email,
+            name: email.split('@')[0] || 'Dev User',
+          },
         })
         return user
       },
+    })
+  )
+} else {
+  providers.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     })
   )
 }
