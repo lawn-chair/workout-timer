@@ -1,89 +1,64 @@
 # Workout Timer Application - Specification
 
-## Core Features
+## Overview
+
+Workout Timer is a Next.js app for building interval workouts and running them in a guided timer experience. Users can create workouts with sets and exercises, configure rest rules, run a live timer with audio cues, and share public workouts that others can view and clone.
+
+## Core Features (Current)
 
 ### 1. Workout Management
 
-- **Create/Edit Workouts**: Name, description, exercises
-- **Exercise Structure**: Each exercise has:
-  - Name
-  - Duration (work time)
-  - Rest time (before next exercise)
-  - Sets (number of repetitions)
-  - Rest between sets
-- **Delete/Clone Workouts**
-- **Workout Categories/Tags** (optional)
+- **Create/Edit Workouts**: Name, description, tags, public visibility
+- **Workout Structure**:
+  - Sets define repeat count, rest between exercises, and rest between sets
+  - Exercises define name and work duration (seconds)
+- **Delete Workouts**
+- **Clone Public Workouts** into a user account
+- **Browse Public Workouts** and deep-link via slug
 
 ### 2. Timer Interface
 
-- **Large Display**: Current exercise name, time remaining
-- **Visual Cues**: Color changes (work vs rest), progress bar
-- **Controls**: Play, Pause, Skip, Stop
+- **Large Display**: Current exercise, phase label, time remaining
+- **Phases**: Countdown, work, rest, rest between sets, complete
+- **Controls**: Start, Pause/Resume, Skip, Stop
 - **Audio Cues**:
   - 3-2-1 countdown beeps
-  - Distinct sound for work start vs rest start
+  - Work start chime
+  - Rest start chime (including between sets)
   - Workout complete chime
-- **Current Progress**: Set #, Exercise #, Total time
+- **Progress**: Set #, repeat #, exercise #, total time elapsed
 
-### 3. Multi-Device Support
+### 3. Accounts & Settings
 
-- **Responsive Design**: Mobile-first
-- **PWA**: Installable, works offline
-- **Orientation**: Portrait optimized, landscape supported
-- **Touch-friendly**: Large buttons, swipe gestures
-
-### 4. Data & Sync
-
-- **Backend**: User accounts, cloud sync
-- **Offline Support**: Local cache, sync when online
-- **Share Workouts**: Generate shareable links
+- **Auth**: NextAuth with Google OAuth in production
+- **Dev Auth**: Credentials provider for development and testing
+- **Settings**: Audio preferences (countdown, work/rest start, completion)
 
 ---
 
 ## Technical Stack
 
-- **Frontend**: Next.js + TypeScript + Tailwind CSS
-- **State Management**: React Context / Zustand
-- **Audio**: Web Audio API / Howler.js
-- **Backend**: Next.js API routes + database (Prisma + SQLite/PostgreSQL)
-- **Auth**: NextAuth.js
-- **PWA**: next-pwa
+- **Frontend**: Next.js App Router + TypeScript + Tailwind CSS
+- **State Management**: Zustand stores and hooks
+- **Audio**: Web Audio API (tone generation)
+- **Backend**: Next.js API routes + Prisma + SQLite
+- **Auth**: NextAuth
+- **Testing**: Vitest, React Testing Library, Playwright
 
 ---
 
-## Page Structure
+## Page Structure (Current)
 
-1. **Home/Dashboard** - List of saved workouts, quick start
-2. **Workout Builder** - Create/edit workout with drag-drop exercises
-3. **Timer** - Full-screen timer interface
-4. **Settings** - Audio preferences, account settings
-5. **History** - Past workout sessions (optional)
+1. **Home/Dashboard** (`/`) - List of saved workouts and public browse toggle
+2. **Workout Builder** (`/workouts/new`, `/workouts/[id]/edit`) - Create/edit workouts
+3. **Timer** (`/timer`) - Full-screen timer interface
+4. **Settings** (`/settings`) - Audio preferences and account info
+5. **Public Workout** (`/w/[slug]`) - Public detail + start/clone
+6. **Login** (`/login`) - Auth entry point
 
 ---
 
-## Data Models
-
-### Workout
-
-```
-- id
-- name
-- description
-- exercises[] (ordered)
-- createdAt
-- updatedAt
-```
-
-### Exercise
-
-```
-- id
-- name
-- workDuration (seconds)
-- restDuration (seconds)
-- sets (number)
-- restBetweenSets (seconds)
-```
+## Data Models (Current)
 
 ### User
 
@@ -91,63 +66,97 @@
 - id
 - email
 - name
+- settings (JSON)
 - workouts[]
-- settings
+- createdAt
+- updatedAt
+```
+
+### Workout
+
+```
+- id
+- name
+- description
+- slug (unique)
+- tags (comma-separated string)
+- isPublic
+- sets[] (ordered)
+- userId
+- createdAt
+- updatedAt
+```
+
+### WorkoutSet
+
+```
+- id
+- order
+- repeatCount
+- restBetweenExercises
+- restBetweenSets
+- exercises[] (ordered)
+- workoutId
+```
+
+### SetExercise
+
+```
+- id
+- name
+- workDuration (seconds)
+- order
+- setId
 ```
 
 ---
 
-## Timer Flow
+## Timer Flow (Current)
 
-1. Select workout → Preview summary
-2. Press Start → 3-second countdown
-3. For each set:
-   - Work phase (exercise name, countdown)
-   - Rest phase (next exercise preview)
-   - Repeat for sets
-4. Rest between sets (if > 0)
-5. Workout complete → Summary screen
-
----
-
-## UI States
-
-| State     | Background | Timer Color | Sound          |
-| --------- | ---------- | ----------- | -------------- |
-| Countdown | Yellow     | White       | Beep beep beep |
-| Work      | Green      | White       | Start chime    |
-| Rest      | Red        | White       | Rest chime     |
-| Paused    | Gray       | Yellow      | -              |
-| Complete  | Blue       | White       | Celebration    |
+1. User selects a workout on the home page or public detail page
+2. Timer screen loads and waits in `idle`
+3. Start triggers a 3-second countdown
+4. For each set:
+   - Work phase for each exercise
+   - Rest phase between exercises (if configured)
+   - Repeat exercises for `repeatCount`
+5. Rest between sets (if configured)
+6. Final completion screen with action to return home
 
 ---
 
-## Priority Order
+## UI States (Current)
 
-1. **Phase 1**: Timer core (display, controls, audio)
-2. **Phase 2**: Workout CRUD (create, save, load)
-3. **Phase 3**: User accounts & sync
-4. **Phase 4**: History & analytics
-5. **Phase 5**: Polish (themes, gestures, PWA)
+| State             | Background | Sound            |
+| ----------------- | ---------- | ---------------- |
+| Countdown         | Yellow     | Countdown beeps  |
+| Work              | Green      | Work start chime |
+| Rest              | Red        | Rest start chime |
+| Rest Between Sets | Orange     | Rest start chime |
+| Complete          | Blue       | Completion chime |
+| Idle              | Dark gray  | -                |
 
 ---
 
 ## Testing
 
-- **Unit Tests**: Vitest for business logic, stores, utilities
+- **Unit Tests**: Vitest for stores, timer logic, and utilities
 - **Component Tests**: React Testing Library for UI components
 - **E2E Tests**: Playwright for full-page flows
   - Home page: workout list, create, delete
   - Workout builder: create workout with exercises
   - Edit workout: load and update workout
   - Timer: start, pause, resume, complete workout
-  - Dynamic routes: verify params are handled correctly
+  - Dynamic routes: public workout view
 
 ---
 
-## Open Questions
+## Future Ideas / Roadmap
 
-- [ ] Voice announcements (e.g., "Rest", "Go")?
-- [ ] Custom exercise images/icons?
-- [ ] Pre-built workout templates?
-- [ ] Dark/light theme?
+- **PWA**: Installable app with offline support
+- **Workout History**: Completed session history and analytics
+- **Drag-and-Drop Builder**: Reorder sets/exercises visually
+- **Workout Templates**: Pre-built routines and sharing
+- **Voice Announcements**: Spoken phase cues
+- **Custom Media**: Exercise images or icons
+- **Theme Support**: Light/dark themes and accessibility presets
