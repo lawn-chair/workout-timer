@@ -17,6 +17,27 @@ export default function Home() {
     useWorkoutStore()
   const [publicWorkouts, setPublicWorkouts] = useState<Workout[]>([])
   const [showPublic, setShowPublic] = useState(false)
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+
+  const allTags = Array.from(
+    new Set(
+      workouts.flatMap((w) =>
+        (w.tags || '')
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      )
+    )
+  )
+
+  const filteredWorkouts = selectedTag
+    ? workouts.filter((w) =>
+        (w.tags || '')
+          .split(',')
+          .map((t) => t.trim())
+          .includes(selectedTag)
+      )
+    : workouts
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -146,62 +167,107 @@ export default function Home() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-3">
-            {workouts.map((workout) => (
-              <div
-                key={workout.id}
-                className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
-                data-testid={`workout-card-${workout.id}`}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h2 className="text-xl font-semibold">{workout.name}</h2>
-                    {workout.description && (
-                      <p className="text-gray-400 text-sm mt-1">
-                        {workout.description}
-                      </p>
-                    )}
-                    <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                      <span>{workout.exercises.length} exercises</span>
-                      <span>
-                        {workout.exercises.reduce(
-                          (sum, ex) => sum + ex.sets,
-                          0
-                        )}{' '}
-                        total sets
-                      </span>
-                      {workout.isPublic && (
-                        <span className="text-blue-400">Public</span>
+          <>
+            {allTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  onClick={() => setSelectedTag(null)}
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    selectedTag === null
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  All
+                </button>
+                {allTags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => setSelectedTag(tag)}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      selectedTag === tag
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="space-y-3">
+              {filteredWorkouts.map((workout) => (
+                <div
+                  key={workout.id}
+                  className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
+                  data-testid={`workout-card-${workout.id}`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h2 className="text-xl font-semibold">{workout.name}</h2>
+                      {workout.description && (
+                        <p className="text-gray-400 text-sm mt-1">
+                          {workout.description}
+                        </p>
                       )}
+                      {workout.tags && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {workout.tags
+                            .split(',')
+                            .map((t) => t.trim())
+                            .filter(Boolean)
+                            .map((tag) => (
+                              <span
+                                key={tag}
+                                className="bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full text-xs"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+                      <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                        <span>{workout.exercises.length} exercises</span>
+                        <span>
+                          {workout.exercises.reduce(
+                            (sum, ex) => sum + ex.sets,
+                            0
+                          )}{' '}
+                          total sets
+                        </span>
+                        {workout.isPublic && (
+                          <span className="text-blue-400">Public</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => handleStart(workout)}
+                        className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
+                        data-testid={`start-workout-${workout.id}`}
+                      >
+                        Start
+                      </button>
+                      <Link
+                        href={`/workouts/${workout.id}/edit`}
+                        className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+                        data-testid={`edit-workout-${workout.id}`}
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={(e) => handleDelete(workout.id, e)}
+                        className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-red-200"
+                        data-testid={`delete-workout-${workout.id}`}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleStart(workout)}
-                      className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
-                      data-testid={`start-workout-${workout.id}`}
-                    >
-                      Start
-                    </button>
-                    <Link
-                      href={`/workouts/${workout.id}/edit`}
-                      className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
-                      data-testid={`edit-workout-${workout.id}`}
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={(e) => handleDelete(workout.id, e)}
-                      className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-red-200"
-                      data-testid={`delete-workout-${workout.id}`}
-                    >
-                      Delete
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>
