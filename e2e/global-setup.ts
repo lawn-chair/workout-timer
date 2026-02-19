@@ -8,11 +8,24 @@ async function globalSetup(config: FullConfig) {
   const baseURL = config.projects[0]?.use?.baseURL || 'http://localhost:3000'
   const projectRoot = path.resolve(__dirname, '..')
 
+  // Ensure schema exists for the e2e database
+  execSync('npx prisma db push --accept-data-loss', {
+    cwd: projectRoot,
+    stdio: 'pipe',
+    env: {
+      ...process.env,
+      DOTENV_CONFIG_PATH: process.env.DOTENV_CONFIG_PATH || '.env.e2e',
+    },
+  })
+
   // Seed the test user into the database
   execSync('npx tsx e2e/seed-test-user.ts', {
     cwd: projectRoot,
     stdio: 'pipe',
-    env: { ...process.env },
+    env: {
+      ...process.env,
+      DOTENV_CONFIG_PATH: process.env.DOTENV_CONFIG_PATH || '.env.e2e',
+    },
   })
 
   // Sign in via the Credentials provider to get a session cookie
