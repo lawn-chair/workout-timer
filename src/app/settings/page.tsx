@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { fetchUserSettings, updateUserSettings } from '@/lib/workout/api'
+import AppShell from '@/components/ui/AppShell'
+import IconMark from '@/components/ui/IconMark'
+import StatePanel from '@/components/ui/StatePanel'
 
 interface UserSettings {
   countdownBeeps: boolean
@@ -66,96 +69,114 @@ export default function SettingsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
+      <AppShell>
+        <div className="min-h-screen flex items-center justify-center px-5">
+          <StatePanel
+            eyebrow="Loading"
+            title="Syncing settings"
+            description="Pulling your preferences."
+          />
+        </div>
+      </AppShell>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <header className="p-4 border-b border-gray-800">
-        <div className="max-w-2xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Settings</h1>
-          <Link
-            href="/"
-            className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
-          >
-            Back
-          </Link>
-        </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto p-4 space-y-8">
-        <section>
-          <h2 className="text-lg font-semibold mb-2">Account</h2>
-          <div className="bg-gray-800 rounded-lg p-4 space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-400">Name</span>
-              <span>{session?.user?.name || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Email</span>
-              <span>{session?.user?.email || 'N/A'}</span>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-lg font-semibold mb-2">Audio Preferences</h2>
-          <div className="bg-gray-800 rounded-lg p-4 space-y-4">
-            {[
-              {
-                key: 'countdownBeeps' as const,
-                label: 'Countdown Beeps',
-                desc: '3-2-1 beeps before exercise starts',
-              },
-              {
-                key: 'workStartSound' as const,
-                label: 'Work Start Sound',
-                desc: 'Chime when work phase begins',
-              },
-              {
-                key: 'restStartSound' as const,
-                label: 'Rest Start Sound',
-                desc: 'Chime when rest phase begins',
-              },
-              {
-                key: 'completionChime' as const,
-                label: 'Completion Chime',
-                desc: 'Sound when workout is complete',
-              },
-            ].map(({ key, label, desc }) => (
-              <div key={key} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{label}</p>
-                  <p className="text-sm text-gray-400">{desc}</p>
-                </div>
-                <button
-                  onClick={() => toggleSetting(key)}
-                  className={`w-12 h-6 rounded-full transition-colors ${
-                    settings[key] ? 'bg-green-500' : 'bg-gray-600'
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                      settings[key] ? 'translate-x-6' : 'translate-x-0.5'
-                    }`}
-                  />
-                </button>
+    <AppShell>
+      <div className="min-h-screen">
+        <header className="border-b border-white/5 bg-black/30">
+          <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-lime-400/20 text-lime-300 flex items-center justify-center">
+                <IconMark className="h-6 w-6" />
               </div>
-            ))}
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-lime-300/80">
+                  Preferences
+                </p>
+                <h1 className="display-font text-3xl">Settings</h1>
+              </div>
+            </div>
+            <Link
+              href="/"
+              className="ghost-button px-4 py-2 rounded-full text-sm"
+            >
+              Back
+            </Link>
           </div>
-        </section>
+        </header>
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-600 py-3 rounded-lg font-medium"
-        >
-          {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
-        </button>
-      </main>
-    </div>
+        <main className="max-w-4xl mx-auto px-5 py-8 space-y-8">
+          <section>
+            <h2 className="text-lg font-semibold mb-2">Account</h2>
+            <div className="glass-panel rounded-2xl p-5 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Name</span>
+                <span>{session?.user?.name || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Email</span>
+                <span>{session?.user?.email || 'N/A'}</span>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold mb-2">Audio Preferences</h2>
+            <div className="glass-panel rounded-2xl p-5 space-y-4">
+              {[
+                {
+                  key: 'countdownBeeps' as const,
+                  label: 'Countdown Beeps',
+                  desc: '3-2-1 beeps before exercise starts',
+                },
+                {
+                  key: 'workStartSound' as const,
+                  label: 'Work Start Sound',
+                  desc: 'Chime when work phase begins',
+                },
+                {
+                  key: 'restStartSound' as const,
+                  label: 'Rest Start Sound',
+                  desc: 'Chime when rest phase begins',
+                },
+                {
+                  key: 'completionChime' as const,
+                  label: 'Completion Chime',
+                  desc: 'Sound when workout is complete',
+                },
+              ].map(({ key, label, desc }) => (
+                <div key={key} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{label}</p>
+                    <p className="text-sm text-gray-400">{desc}</p>
+                  </div>
+                  <button
+                    onClick={() => toggleSetting(key)}
+                    className={`w-12 h-6 rounded-full transition-colors ${
+                      settings[key] ? 'bg-lime-400' : 'bg-gray-600'
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                        settings[key] ? 'translate-x-6' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full lime-button disabled:bg-gray-600 py-3 rounded-full font-medium"
+          >
+            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
+          </button>
+        </main>
+      </div>
+    </AppShell>
   )
 }
