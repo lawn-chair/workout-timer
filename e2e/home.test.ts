@@ -3,7 +3,7 @@ import { test, expect, Page } from '@playwright/test'
 async function createWorkout(page: Page, name: string) {
   await page.goto('/workouts/new')
   await page.getByTestId('workout-name-input').fill(name)
-  await page.getByTestId('exercise-name-input-0').fill('Test Exercise')
+  await page.getByTestId('exercise-name-input-0-0').fill('Test Exercise')
   await page.getByTestId('create-workout-button').click()
   await expect(page).toHaveURL('/')
 }
@@ -61,8 +61,8 @@ test.describe('Home page', () => {
 
     await deleteButton.first().click()
 
-    await page.waitForTimeout(500)
-    const newCount = await deleteButton.count()
-    expect(newCount).toBe(initialCount - 1)
+    await expect(page.getByText('Workout to Delete')).not.toBeVisible({
+      timeout: 10000,
+    })
   })
 })

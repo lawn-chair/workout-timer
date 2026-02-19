@@ -2,49 +2,91 @@ import { describe, it, expect } from 'vitest'
 import { getTotalWorkoutTime } from './types'
 import { Workout } from './types'
 
-const createWorkout = (
-  exercises: Partial<Workout['exercises'][0]>[]
-): Workout => ({
+type ExerciseInput = { name?: string; workDuration?: number }
+type SetInput = {
+  repeatCount?: number
+  restBetweenExercises?: number
+  restBetweenSets?: number
+  exercises?: ExerciseInput[]
+}
+
+const createWorkout = (sets: SetInput[]): Workout => ({
   id: '1',
   name: 'Test',
-  exercises: exercises.map((e, i) => ({
-    id: String(i + 1),
-    name: e.name || 'Exercise',
-    workDuration: e.workDuration ?? 30,
-    restDuration: e.restDuration ?? 10,
-    sets: e.sets ?? 1,
-    restBetweenSets: e.restBetweenSets ?? 0,
+  sets: sets.map((set, setIndex) => ({
+    id: String(setIndex + 1),
+    order: setIndex,
+    repeatCount: set.repeatCount ?? 1,
+    restBetweenExercises: set.restBetweenExercises ?? 0,
+    restBetweenSets: set.restBetweenSets ?? 0,
+    exercises: (set.exercises ?? [{ workDuration: 30 }]).map((ex, exIndex) => ({
+      id: `${setIndex + 1}-${exIndex + 1}`,
+      name: ex.name || 'Exercise',
+      workDuration: ex.workDuration ?? 30,
+      order: exIndex,
+    })),
   })),
 })
 
 describe('getTotalWorkoutTime', () => {
   it('should calculate time for single exercise single set', () => {
     const workout = createWorkout([
-      { workDuration: 30, restDuration: 10, sets: 1 },
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ workDuration: 30 }],
+      },
     ])
-    expect(getTotalWorkoutTime(workout)).toBe(40)
+    expect(getTotalWorkoutTime(workout)).toBe(30)
   })
 
-  it('should calculate time for multiple sets', () => {
+  it('should calculate time for repeats and rest between exercises', () => {
     const workout = createWorkout([
-      { workDuration: 30, restDuration: 10, sets: 3 },
+      {
+        repeatCount: 2,
+        restBetweenExercises: 10,
+        restBetweenSets: 0,
+        exercises: [{ workDuration: 20 }, { workDuration: 30 }],
+      },
     ])
     expect(getTotalWorkoutTime(workout)).toBe(120)
   })
 
   it('should include rest between sets', () => {
     const workout = createWorkout([
-      { workDuration: 30, restDuration: 10, sets: 3, restBetweenSets: 30 },
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 15,
+        exercises: [{ workDuration: 30 }],
+      },
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ workDuration: 45 }],
+      },
     ])
-    expect(getTotalWorkoutTime(workout)).toBe(180)
+    expect(getTotalWorkoutTime(workout)).toBe(90)
   })
 
-  it('should calculate time for multiple exercises', () => {
+  it('should calculate time for multiple sets and exercises', () => {
     const workout = createWorkout([
-      { workDuration: 30, restDuration: 10, sets: 2, restBetweenSets: 30 },
-      { workDuration: 45, restDuration: 15, sets: 3, restBetweenSets: 0 },
+      {
+        repeatCount: 3,
+        restBetweenExercises: 5,
+        restBetweenSets: 10,
+        exercises: [{ workDuration: 10 }, { workDuration: 20 }],
+      },
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ workDuration: 40 }],
+      },
     ])
-    expect(getTotalWorkoutTime(workout)).toBe(290)
+    expect(getTotalWorkoutTime(workout)).toBe(155)
   })
 
   it('should return 0 for empty workout', () => {
@@ -52,17 +94,27 @@ describe('getTotalWorkoutTime', () => {
     expect(getTotalWorkoutTime(workout)).toBe(0)
   })
 
-  it('should handle zero rest durations', () => {
+  it('should handle zero rest between exercises', () => {
     const workout = createWorkout([
-      { workDuration: 30, restDuration: 0, sets: 2 },
+      {
+        repeatCount: 2,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ workDuration: 30 }, { workDuration: 30 }],
+      },
     ])
-    expect(getTotalWorkoutTime(workout)).toBe(60)
+    expect(getTotalWorkoutTime(workout)).toBe(120)
   })
 
-  it('should handle single set with rest between sets (should be 0)', () => {
+  it('should ignore rest between sets for final set', () => {
     const workout = createWorkout([
-      { workDuration: 30, restDuration: 10, sets: 1, restBetweenSets: 30 },
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 30,
+        exercises: [{ workDuration: 30 }],
+      },
     ])
-    expect(getTotalWorkoutTime(workout)).toBe(40)
+    expect(getTotalWorkoutTime(workout)).toBe(30)
   })
 })
