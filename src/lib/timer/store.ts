@@ -35,14 +35,23 @@ function getNextPhase(
   }
 
   if (currentPhase === 'work') {
-    if (currentSet < exercise.sets) {
+    if (exercise.restDuration > 0) {
       return {
         phase: 'rest',
         exerciseIndex,
         set: currentSet,
         time: exercise.restDuration,
       }
-    } else if (exerciseIndex + 1 < workout.exercises.length) {
+    }
+    if (currentSet < exercise.sets) {
+      return {
+        phase: 'work',
+        exerciseIndex,
+        set: currentSet + 1,
+        time: exercise.workDuration,
+      }
+    }
+    if (exerciseIndex + 1 < workout.exercises.length) {
       const nextExercise = workout.exercises[exerciseIndex + 1]
       if (exercise.restBetweenSets > 0) {
         return {
@@ -58,9 +67,8 @@ function getNextPhase(
         set: 1,
         time: nextExercise.workDuration,
       }
-    } else {
-      return { phase: 'complete', exerciseIndex, set: currentSet, time: 0 }
     }
+    return { phase: 'complete', exerciseIndex, set: currentSet, time: 0 }
   }
 
   if (currentPhase === 'rest') {
@@ -74,6 +82,14 @@ function getNextPhase(
       }
     }
     if (exerciseIndex + 1 < workout.exercises.length) {
+      if (exercise.restBetweenSets > 0) {
+        return {
+          phase: 'restBetweenSets',
+          exerciseIndex,
+          set: currentSet,
+          time: exercise.restBetweenSets,
+        }
+      }
       return {
         phase: 'work',
         exerciseIndex: exerciseIndex + 1,
@@ -85,12 +101,16 @@ function getNextPhase(
   }
 
   if (currentPhase === 'restBetweenSets') {
-    return {
-      phase: 'work',
-      exerciseIndex: exerciseIndex + 1,
-      set: 1,
-      time: workout.exercises[exerciseIndex + 1].workDuration,
+    if (exerciseIndex + 1 < workout.exercises.length) {
+      const nextExercise = workout.exercises[exerciseIndex + 1]
+      return {
+        phase: 'work',
+        exerciseIndex: exerciseIndex + 1,
+        set: 1,
+        time: nextExercise.workDuration,
+      }
     }
+    return { phase: 'complete', exerciseIndex, set: currentSet, time: 0 }
   }
 
   return null

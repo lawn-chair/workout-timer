@@ -53,6 +53,9 @@
     ],
     "*.{json,md,css}": [
       "prettier --write"
+    ],
+    "src/**/*.{ts,tsx}": [
+      "vitest run"
     ]
   }
 }
