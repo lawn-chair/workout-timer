@@ -108,6 +108,12 @@ export default function Home() {
             >
               + New Workout
             </Link>
+            <Link
+              href="/settings"
+              className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+            >
+              Settings
+            </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
               className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
