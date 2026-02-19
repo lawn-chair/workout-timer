@@ -14,6 +14,7 @@
 /coverage
 /playwright-report
 /test-results
+/e2e/.auth-state.json
 
 # next.js
 /.next/

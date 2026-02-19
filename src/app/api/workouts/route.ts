@@ -2,6 +2,20 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
 
+async function generateUniqueSlug(name: string): Promise<string> {
+  const baseSlug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+  let slug = baseSlug
+  let counter = 0
+  while (await prisma.workout.findUnique({ where: { slug } })) {
+    counter++
+    slug = `${baseSlug}-${counter}`
+  }
+  return slug
+}
+
 export async function GET() {
   try {
     const user = await getCurrentUser()
@@ -39,7 +53,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
     }
 
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const slug = await generateUniqueSlug(name)
 
     const workout = await prisma.workout.create({
       data: {

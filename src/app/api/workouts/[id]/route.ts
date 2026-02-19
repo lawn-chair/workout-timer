@@ -2,6 +2,25 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
 
+async function generateUniqueSlug(
+  name: string,
+  excludeId?: string
+): Promise<string> {
+  const baseSlug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+  let slug = baseSlug
+  let counter = 0
+  while (true) {
+    const existing = await prisma.workout.findUnique({ where: { slug } })
+    if (!existing || existing.id === excludeId) break
+    counter++
+    slug = `${baseSlug}-${counter}`
+  }
+  return slug
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -66,7 +85,7 @@ export async function PATCH(
 
     if (name !== undefined) {
       updateData.name = name
-      updateData.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      updateData.slug = await generateUniqueSlug(name, id)
     }
     if (description !== undefined) updateData.description = description
     if (isPublic !== undefined) updateData.isPublic = isPublic
