@@ -99,6 +99,7 @@ export default function NewWorkoutPage() {
               placeholder="e.g., Morning HIIT"
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
               required
+              data-testid="workout-name-input"
             />
           </div>
 
@@ -122,6 +123,7 @@ export default function NewWorkoutPage() {
                 type="button"
                 onClick={addExercise}
                 className="text-green-500 hover:text-green-400 text-sm font-medium"
+                data-testid="add-exercise-button"
               >
                 + Add Exercise
               </button>
@@ -147,6 +149,7 @@ export default function NewWorkoutPage() {
                           type="button"
                           onClick={() => removeExercise(index)}
                           className="text-red-400 hover:text-red-300 text-sm"
+                          data-testid={`remove-exercise-button-${index}`}
                         >
                           Remove
                         </button>
@@ -167,6 +170,7 @@ export default function NewWorkoutPage() {
                           placeholder="e.g., Jumping Jacks"
                           className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-green-500"
                           required
+                          data-testid={`exercise-name-input-${index}`}
                         />
                       </div>
 
@@ -259,6 +263,7 @@ export default function NewWorkoutPage() {
               type="button"
               onClick={() => router.push('/')}
               className="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-medium"
+              data-testid="cancel-button"
             >
               Cancel
             </button>
@@ -266,6 +271,7 @@ export default function NewWorkoutPage() {
               type="submit"
               disabled={saving || !name.trim()}
               className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-600 py-3 rounded-lg font-medium"
+              data-testid="create-workout-button"
             >
               {saving ? 'Saving...' : 'Create Workout'}
             </button>

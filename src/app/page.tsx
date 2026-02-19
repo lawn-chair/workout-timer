@@ -63,6 +63,7 @@ export default function Home() {
           <Link
             href="/workouts/new"
             className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
+            data-testid="new-workout-button"
           >
             + New Workout
           </Link>
@@ -86,6 +87,7 @@ export default function Home() {
               <div
                 key={workout.id}
                 className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
+                data-testid={`workout-card-${workout.id}`}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -110,18 +112,21 @@ export default function Home() {
                     <button
                       onClick={() => handleStart(workout)}
                       className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
+                      data-testid={`start-workout-${workout.id}`}
                     >
                       Start
                     </button>
                     <Link
                       href={`/workouts/${workout.id}/edit`}
                       className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+                      data-testid={`edit-workout-${workout.id}`}
                     >
                       Edit
                     </Link>
                     <button
                       onClick={(e) => handleDelete(workout.id, e)}
                       className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-red-200"
+                      data-testid={`delete-workout-${workout.id}`}
                     >
                       Delete
                     </button>
