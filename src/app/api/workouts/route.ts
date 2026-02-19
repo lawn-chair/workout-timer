@@ -25,7 +25,12 @@ export async function GET() {
 
     const workouts = await prisma.workout.findMany({
       where: { userId: user.id },
-      include: { exercises: { orderBy: { order: 'asc' } } },
+      include: {
+        sets: {
+          orderBy: { order: 'asc' },
+          include: { exercises: { orderBy: { order: 'asc' } } },
+        },
+      },
       orderBy: { updatedAt: 'desc' },
     })
 
@@ -47,7 +52,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, description, isPublic, tags, exercises } = body
+    const { name, description, isPublic, tags, sets } = body
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
@@ -63,31 +68,40 @@ export async function POST(request: Request) {
         tags: tags || '',
         isPublic: isPublic || false,
         userId: user.id,
-        exercises: exercises
+        sets: sets
           ? {
-              create: exercises.map(
+              create: sets.map(
                 (
-                  ex: {
-                    name: string
-                    workDuration: number
-                    restDuration: number
-                    sets: number
+                  set: {
+                    repeatCount: number
+                    restBetweenExercises: number
                     restBetweenSets: number
+                    exercises: { name: string; workDuration: number }[]
                   },
-                  index: number
+                  setIndex: number
                 ) => ({
-                  name: ex.name,
-                  workDuration: ex.workDuration || 30,
-                  restDuration: ex.restDuration || 10,
-                  sets: ex.sets || 1,
-                  restBetweenSets: ex.restBetweenSets || 60,
-                  order: index,
+                  order: setIndex,
+                  repeatCount: set.repeatCount || 1,
+                  restBetweenExercises: set.restBetweenExercises || 0,
+                  restBetweenSets: set.restBetweenSets || 0,
+                  exercises: {
+                    create: set.exercises.map((ex, exIndex) => ({
+                      name: ex.name,
+                      workDuration: ex.workDuration || 30,
+                      order: exIndex,
+                    })),
+                  },
                 })
               ),
             }
           : undefined,
       },
-      include: { exercises: { orderBy: { order: 'asc' } } },
+      include: {
+        sets: {
+          orderBy: { order: 'asc' },
+          include: { exercises: { orderBy: { order: 'asc' } } },
+        },
+      },
     })
 
     return NextResponse.json(workout)

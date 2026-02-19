@@ -7,7 +7,7 @@ test.describe('New Workout page', () => {
 
   test('creates a new workout with single exercise', async ({ page }) => {
     await page.getByTestId('workout-name-input').fill('My Test Workout')
-    await page.getByTestId('exercise-name-input-0').fill('Push-ups')
+    await page.getByTestId('exercise-name-input-0-0').fill('Push-ups')
     await page.getByTestId('create-workout-button').click()
 
     await expect(page).toHaveURL('/')
@@ -16,13 +16,13 @@ test.describe('New Workout page', () => {
 
   test('creates workout with multiple exercises', async ({ page }) => {
     await page.getByTestId('workout-name-input').fill('Multi Exercise Workout')
-    await page.getByTestId('exercise-name-input-0').fill('Push-ups')
+    await page.getByTestId('exercise-name-input-0-0').fill('Push-ups')
 
-    await page.getByTestId('add-exercise-button').click()
-    await page.getByTestId('exercise-name-input-1').fill('Squats')
+    await page.getByTestId('add-exercise-button-0').click()
+    await page.getByTestId('exercise-name-input-0-1').fill('Squats')
 
-    await page.getByTestId('add-exercise-button').click()
-    await page.getByTestId('exercise-name-input-2').fill('Lunges')
+    await page.getByTestId('add-exercise-button-0').click()
+    await page.getByTestId('exercise-name-input-0-2').fill('Lunges')
 
     await page.getByTestId('create-workout-button').click()
 
@@ -31,13 +31,13 @@ test.describe('New Workout page', () => {
   })
 
   test('removes exercise from form', async ({ page }) => {
-    await page.getByTestId('exercise-name-input-0').fill('Push-ups')
-    await page.getByTestId('add-exercise-button').click()
-    await page.getByTestId('exercise-name-input-1').fill('Squats')
+    await page.getByTestId('exercise-name-input-0-0').fill('Push-ups')
+    await page.getByTestId('add-exercise-button-0').click()
+    await page.getByTestId('exercise-name-input-0-1').fill('Squats')
 
-    await page.getByTestId('remove-exercise-button-1').click()
+    await page.getByTestId('remove-exercise-button-0-1').click()
 
-    const secondInput = page.getByTestId('exercise-name-input-1')
+    const secondInput = page.getByTestId('exercise-name-input-0-1')
     await expect(secondInput).not.toBeVisible()
   })
 

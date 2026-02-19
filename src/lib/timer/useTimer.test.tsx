@@ -5,18 +5,29 @@ import { useTimerStore } from './store'
 import { Workout } from './types'
 import React from 'react'
 
-const createWorkout = (
-  exercises: Partial<Workout['exercises'][0]>[]
-): Workout => ({
+type ExerciseInput = { name?: string; workDuration?: number }
+type SetInput = {
+  repeatCount?: number
+  restBetweenExercises?: number
+  restBetweenSets?: number
+  exercises?: ExerciseInput[]
+}
+
+const createWorkout = (sets: SetInput[]): Workout => ({
   id: '1',
   name: 'Test Workout',
-  exercises: exercises.map((e, i) => ({
-    id: String(i + 1),
-    name: e.name || `Exercise ${i + 1}`,
-    workDuration: e.workDuration ?? 30,
-    restDuration: e.restDuration ?? 10,
-    sets: e.sets ?? 1,
-    restBetweenSets: e.restBetweenSets ?? 0,
+  sets: sets.map((set, setIndex) => ({
+    id: String(setIndex + 1),
+    order: setIndex,
+    repeatCount: set.repeatCount ?? 1,
+    restBetweenExercises: set.restBetweenExercises ?? 0,
+    restBetweenSets: set.restBetweenSets ?? 0,
+    exercises: (set.exercises ?? [{ workDuration: 30 }]).map((ex, exIndex) => ({
+      id: `${setIndex + 1}-${exIndex + 1}`,
+      name: ex.name || `Exercise ${exIndex + 1}`,
+      workDuration: ex.workDuration ?? 30,
+      order: exIndex,
+    })),
   })),
 })
 
@@ -38,8 +49,9 @@ describe('useTimer', () => {
     useTimerStore.setState({
       workout: null,
       phase: 'idle',
+      currentSetIndex: 0,
       currentExerciseIndex: 0,
-      currentSet: 1,
+      currentRepeat: 1,
       timeRemaining: 0,
       totalTimeElapsed: 0,
       isRunning: false,
@@ -51,7 +63,14 @@ describe('useTimer', () => {
   })
 
   it('should not start interval when not running', () => {
-    const workout = createWorkout([{ name: 'Push-ups', workDuration: 30 }])
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ name: 'Push-ups', workDuration: 30 }],
+      },
+    ])
     useTimerStore.getState().loadWorkout(workout)
 
     render(<TestComponent />)
@@ -60,7 +79,14 @@ describe('useTimer', () => {
   })
 
   it('should start interval when running in countdown phase', () => {
-    const workout = createWorkout([{ name: 'Push-ups', workDuration: 30 }])
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ name: 'Push-ups', workDuration: 30 }],
+      },
+    ])
     useTimerStore.getState().loadWorkout(workout)
     useTimerStore.getState().start()
 
@@ -71,7 +97,14 @@ describe('useTimer', () => {
   })
 
   it('should tick when running in work phase', () => {
-    const workout = createWorkout([{ name: 'Push-ups', workDuration: 30 }])
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ name: 'Push-ups', workDuration: 30 }],
+      },
+    ])
     useTimerStore.getState().loadWorkout(workout)
     useTimerStore.getState().start()
     useTimerStore.setState({
@@ -89,7 +122,14 @@ describe('useTimer', () => {
   })
 
   it('should not tick when phase is idle', () => {
-    const workout = createWorkout([{ name: 'Push-ups', workDuration: 30 }])
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ name: 'Push-ups', workDuration: 30 }],
+      },
+    ])
     useTimerStore.getState().loadWorkout(workout)
 
     render(<TestComponent />)
@@ -101,7 +141,14 @@ describe('useTimer', () => {
   })
 
   it('should not tick when phase is complete', () => {
-    const workout = createWorkout([{ name: 'Push-ups', workDuration: 30 }])
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ name: 'Push-ups', workDuration: 30 }],
+      },
+    ])
     useTimerStore.getState().loadWorkout(workout)
     useTimerStore.getState().start()
     useTimerStore.setState({ phase: 'complete', isRunning: false })
@@ -115,7 +162,14 @@ describe('useTimer', () => {
   })
 
   it('should clear interval on unmount', () => {
-    const workout = createWorkout([{ name: 'Push-ups', workDuration: 30 }])
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ name: 'Push-ups', workDuration: 30 }],
+      },
+    ])
     useTimerStore.getState().loadWorkout(workout)
     useTimerStore.getState().start()
 
@@ -129,7 +183,14 @@ describe('useTimer', () => {
   })
 
   it('should handle pause correctly', () => {
-    const workout = createWorkout([{ name: 'Push-ups', workDuration: 30 }])
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ name: 'Push-ups', workDuration: 30 }],
+      },
+    ])
     useTimerStore.getState().loadWorkout(workout)
     useTimerStore.getState().start()
 

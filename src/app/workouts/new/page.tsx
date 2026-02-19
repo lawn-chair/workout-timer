@@ -7,9 +7,13 @@ import { useWorkoutStore, WorkoutFormData } from '@/lib/workout/store'
 interface ExerciseField {
   name: string
   workDuration: number
-  restDuration: number
-  sets: number
+}
+
+interface SetField {
+  repeatCount: number
+  restBetweenExercises: number
   restBetweenSets: number
+  exercises: ExerciseField[]
 }
 
 export default function NewWorkoutPage() {
@@ -18,44 +22,88 @@ export default function NewWorkoutPage() {
   const [description, setDescription] = useState('')
   const [tags, setTags] = useState('')
   const [isPublic, setIsPublic] = useState(false)
-  const [exercises, setExercises] = useState<ExerciseField[]>([
+  const [sets, setSets] = useState<SetField[]>([
     {
-      name: '',
-      workDuration: 30,
-      restDuration: 10,
-      sets: 1,
+      repeatCount: 1,
+      restBetweenExercises: 0,
       restBetweenSets: 0,
+      exercises: [
+        {
+          name: '',
+          workDuration: 30,
+        },
+      ],
     },
   ])
   const [saving, setSaving] = useState(false)
 
   const { createWorkout } = useWorkoutStore()
 
-  const addExercise = () => {
-    setExercises([
-      ...exercises,
+  const addSet = () => {
+    setSets([
+      ...sets,
       {
-        name: '',
-        workDuration: 30,
-        restDuration: 10,
-        sets: 1,
+        repeatCount: 1,
+        restBetweenExercises: 0,
         restBetweenSets: 0,
+        exercises: [
+          {
+            name: '',
+            workDuration: 30,
+          },
+        ],
       },
     ])
   }
 
-  const removeExercise = (index: number) => {
-    setExercises(exercises.filter((_, i) => i !== index))
+  const removeSet = (index: number) => {
+    setSets(sets.filter((_, i) => i !== index))
+  }
+
+  const updateSet = (
+    index: number,
+    field: keyof Omit<SetField, 'exercises'>,
+    value: number
+  ) => {
+    const updated = [...sets]
+    updated[index] = { ...updated[index], [field]: value }
+    setSets(updated)
+  }
+
+  const addExercise = (setIndex: number) => {
+    const updated = [...sets]
+    updated[setIndex] = {
+      ...updated[setIndex],
+      exercises: [
+        ...updated[setIndex].exercises,
+        { name: '', workDuration: 30 },
+      ],
+    }
+    setSets(updated)
+  }
+
+  const removeExercise = (setIndex: number, exerciseIndex: number) => {
+    const updated = [...sets]
+    updated[setIndex] = {
+      ...updated[setIndex],
+      exercises: updated[setIndex].exercises.filter(
+        (_, i) => i !== exerciseIndex
+      ),
+    }
+    setSets(updated)
   }
 
   const updateExercise = (
-    index: number,
+    setIndex: number,
+    exerciseIndex: number,
     field: keyof ExerciseField,
     value: string | number
   ) => {
-    const updated = [...exercises]
-    updated[index] = { ...updated[index], [field]: value }
-    setExercises(updated)
+    const updated = [...sets]
+    const exercises = [...updated[setIndex].exercises]
+    exercises[exerciseIndex] = { ...exercises[exerciseIndex], [field]: value }
+    updated[setIndex] = { ...updated[setIndex], exercises }
+    setSets(updated)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,15 +117,24 @@ export default function NewWorkoutPage() {
       description: description.trim() || undefined,
       tags: tags.trim() || undefined,
       isPublic,
-      exercises: exercises
-        .filter((ex) => ex.name.trim())
-        .map((ex) => ({
-          name: ex.name.trim(),
-          workDuration: ex.workDuration,
-          restDuration: ex.restDuration,
-          sets: ex.sets,
-          restBetweenSets: ex.restBetweenSets,
-        })),
+      sets: sets
+        .map((set) => ({
+          repeatCount: Math.max(set.repeatCount, 1),
+          restBetweenExercises: Math.max(set.restBetweenExercises, 0),
+          restBetweenSets: Math.max(set.restBetweenSets, 0),
+          exercises: set.exercises
+            .filter((ex) => ex.name.trim())
+            .map((ex) => ({
+              name: ex.name.trim(),
+              workDuration: Math.max(ex.workDuration, 1),
+            })),
+        }))
+        .filter((set) => set.exercises.length > 0),
+    }
+
+    if (data.sets.length === 0) {
+      setSaving(false)
+      return
     }
 
     await createWorkout(data)
@@ -153,140 +210,193 @@ export default function NewWorkoutPage() {
 
           <div>
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-semibold">Exercises</h2>
+              <h2 className="text-lg font-semibold">Sets</h2>
               <button
                 type="button"
-                onClick={addExercise}
+                onClick={addSet}
                 className="text-green-500 hover:text-green-400 text-sm font-medium"
-                data-testid="add-exercise-button"
+                data-testid="add-set-button"
               >
-                + Add Exercise
+                + Add Set
               </button>
             </div>
 
-            {exercises.length === 0 ? (
+            {sets.length === 0 ? (
               <p className="text-gray-500 text-center py-4">
-                No exercises yet. Click &quot;Add Exercise&quot; to get started.
+                No sets yet. Click &quot;Add Set&quot; to get started.
               </p>
             ) : (
               <div className="space-y-4">
-                {exercises.map((exercise, index) => (
+                {sets.map((set, setIndex) => (
                   <div
-                    key={index}
+                    key={setIndex}
                     className="bg-gray-800 rounded-lg p-4 border border-gray-700"
                   >
                     <div className="flex justify-between items-start mb-3">
                       <span className="text-sm font-medium text-gray-400">
-                        Exercise {index + 1}
+                        Set {setIndex + 1}
                       </span>
-                      {exercises.length > 1 && (
+                      {sets.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => removeExercise(index)}
+                          onClick={() => removeSet(setIndex)}
                           className="text-red-400 hover:text-red-300 text-sm"
-                          data-testid={`remove-exercise-button-${index}`}
+                          data-testid={`remove-set-button-${setIndex}`}
                         >
-                          Remove
+                          Remove Set
                         </button>
                       )}
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-3 mb-4">
                       <div>
                         <label className="block text-xs text-gray-400 mb-1">
-                          Name
+                          Repeat Count
                         </label>
                         <input
-                          type="text"
-                          value={exercise.name}
+                          type="number"
+                          value={set.repeatCount}
                           onChange={(e) =>
-                            updateExercise(index, 'name', e.target.value)
+                            updateSet(
+                              setIndex,
+                              'repeatCount',
+                              parseInt(e.target.value) || 1
+                            )
                           }
-                          placeholder="e.g., Jumping Jacks"
-                          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-green-500"
-                          required
-                          data-testid={`exercise-name-input-${index}`}
+                          min={1}
+                          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-green-500"
+                          data-testid={`set-repeat-input-${setIndex}`}
                         />
                       </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs text-gray-400 mb-1">
-                            Work (seconds)
-                          </label>
-                          <input
-                            type="number"
-                            value={exercise.workDuration}
-                            onChange={(e) =>
-                              updateExercise(
-                                index,
-                                'workDuration',
-                                parseInt(e.target.value) || 0
-                              )
-                            }
-                            min={1}
-                            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-green-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-400 mb-1">
-                            Rest (seconds)
-                          </label>
-                          <input
-                            type="number"
-                            value={exercise.restDuration}
-                            onChange={(e) =>
-                              updateExercise(
-                                index,
-                                'restDuration',
-                                parseInt(e.target.value) || 0
-                              )
-                            }
-                            min={0}
-                            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-green-500"
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">
+                          Rest Between Exercises
+                        </label>
+                        <input
+                          type="number"
+                          value={set.restBetweenExercises}
+                          onChange={(e) =>
+                            updateSet(
+                              setIndex,
+                              'restBetweenExercises',
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          min={0}
+                          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-green-500"
+                          data-testid={`rest-between-exercises-input-${setIndex}`}
+                        />
                       </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs text-gray-400 mb-1">
-                            Sets
-                          </label>
-                          <input
-                            type="number"
-                            value={exercise.sets}
-                            onChange={(e) =>
-                              updateExercise(
-                                index,
-                                'sets',
-                                parseInt(e.target.value) || 1
-                              )
-                            }
-                            min={1}
-                            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-green-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-400 mb-1">
-                            Rest Between Sets
-                          </label>
-                          <input
-                            type="number"
-                            value={exercise.restBetweenSets}
-                            onChange={(e) =>
-                              updateExercise(
-                                index,
-                                'restBetweenSets',
-                                parseInt(e.target.value) || 0
-                              )
-                            }
-                            min={0}
-                            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-green-500"
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">
+                          Rest Between Sets
+                        </label>
+                        <input
+                          type="number"
+                          value={set.restBetweenSets}
+                          onChange={(e) =>
+                            updateSet(
+                              setIndex,
+                              'restBetweenSets',
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          min={0}
+                          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-green-500"
+                          data-testid={`rest-between-sets-input-${setIndex}`}
+                        />
                       </div>
                     </div>
+
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="text-sm font-semibold">Exercises</h3>
+                      <button
+                        type="button"
+                        onClick={() => addExercise(setIndex)}
+                        className="text-green-500 hover:text-green-400 text-xs font-medium"
+                        data-testid={`add-exercise-button-${setIndex}`}
+                      >
+                        + Add Exercise
+                      </button>
+                    </div>
+
+                    {set.exercises.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">
+                        No exercises yet. Click &quot;Add Exercise&quot; to get
+                        started.
+                      </p>
+                    ) : (
+                      <div className="space-y-4">
+                        {set.exercises.map((exercise, exerciseIndex) => (
+                          <div
+                            key={exerciseIndex}
+                            className="bg-gray-900 rounded-lg p-3 border border-gray-700"
+                          >
+                            <div className="flex justify-between items-start mb-3">
+                              <span className="text-sm font-medium text-gray-400">
+                                Exercise {exerciseIndex + 1}
+                              </span>
+                              {set.exercises.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeExercise(setIndex, exerciseIndex)
+                                  }
+                                  className="text-red-400 hover:text-red-300 text-xs"
+                                  data-testid={`remove-exercise-button-${setIndex}-${exerciseIndex}`}
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="space-y-3">
+                              <div>
+                                <label className="block text-xs text-gray-400 mb-1">
+                                  Name
+                                </label>
+                                <input
+                                  type="text"
+                                  value={exercise.name}
+                                  onChange={(e) =>
+                                    updateExercise(
+                                      setIndex,
+                                      exerciseIndex,
+                                      'name',
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="e.g., Jumping Jacks"
+                                  className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-green-500"
+                                  required
+                                  data-testid={`exercise-name-input-${setIndex}-${exerciseIndex}`}
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-xs text-gray-400 mb-1">
+                                  Work (seconds)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={exercise.workDuration}
+                                  onChange={(e) =>
+                                    updateExercise(
+                                      setIndex,
+                                      exerciseIndex,
+                                      'workDuration',
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  min={1}
+                                  className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-green-500"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

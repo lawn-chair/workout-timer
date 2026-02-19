@@ -14,10 +14,10 @@ async function createWorkout(
 ) {
   await page.goto('/workouts/new')
   await page.getByTestId('workout-name-input').fill(name)
-  await page.getByTestId('exercise-name-input-0').fill(exercises[0])
+  await page.getByTestId('exercise-name-input-0-0').fill(exercises[0])
   for (let i = 1; i < exercises.length; i++) {
-    await page.getByTestId('add-exercise-button').click()
-    await page.getByTestId(`exercise-name-input-${i}`).fill(exercises[i])
+    await page.getByTestId('add-exercise-button-0').click()
+    await page.getByTestId(`exercise-name-input-0-${i}`).fill(exercises[i])
   }
   await page.getByTestId('create-workout-button').click()
   await expect(page).toHaveURL('/')
@@ -47,7 +47,7 @@ test.describe('Edit Workout page', () => {
     await clickWorkoutAction(page, name, 'Edit')
 
     await expect(page.getByTestId('workout-name-input')).toHaveValue(name)
-    await expect(page.getByTestId('exercise-name-input-0')).toHaveValue(
+    await expect(page.getByTestId('exercise-name-input-0-0')).toHaveValue(
       'Burpees'
     )
   })
@@ -79,16 +79,16 @@ test.describe('Edit Workout page', () => {
     await clickWorkoutAction(page, name, 'Edit')
 
     // Wait for workout data to load
-    await expect(page.getByTestId('exercise-name-input-0')).toHaveValue(
+    await expect(page.getByTestId('exercise-name-input-0-0')).toHaveValue(
       'Burpees'
     )
 
-    await page.getByTestId('add-exercise-button').click()
+    await page.getByTestId('add-exercise-button-0').click()
     // Wait for the new exercise input to be visible before filling
-    await expect(page.getByTestId('exercise-name-input-1')).toBeVisible()
-    await page.getByTestId('exercise-name-input-1').fill('Planks')
+    await expect(page.getByTestId('exercise-name-input-0-1')).toBeVisible()
+    await page.getByTestId('exercise-name-input-0-1').fill('Planks')
     // Verify the value was set before submitting
-    await expect(page.getByTestId('exercise-name-input-1')).toHaveValue(
+    await expect(page.getByTestId('exercise-name-input-0-1')).toHaveValue(
       'Planks'
     )
 
@@ -103,10 +103,10 @@ test.describe('Edit Workout page', () => {
     await expect(page).toHaveURL('/')
     await clickWorkoutAction(page, name, 'Edit')
 
-    await expect(page.getByTestId('exercise-name-input-0')).toHaveValue(
+    await expect(page.getByTestId('exercise-name-input-0-0')).toHaveValue(
       'Burpees'
     )
-    await expect(page.getByTestId('exercise-name-input-1')).toHaveValue(
+    await expect(page.getByTestId('exercise-name-input-0-1')).toHaveValue(
       'Planks'
     )
   })
@@ -118,14 +118,14 @@ test.describe('Edit Workout page', () => {
     await clickWorkoutAction(page, name, 'Edit')
 
     await expect(page.getByTestId('workout-name-input')).toHaveValue(name)
-    await expect(page.getByTestId('exercise-name-input-0')).toHaveValue(
+    await expect(page.getByTestId('exercise-name-input-0-0')).toHaveValue(
       'Push-ups'
     )
-    await expect(page.getByTestId('exercise-name-input-1')).toHaveValue(
+    await expect(page.getByTestId('exercise-name-input-0-1')).toHaveValue(
       'Squats'
     )
 
-    await page.getByTestId('remove-exercise-button-1').click()
+    await page.getByTestId('remove-exercise-button-0-1').click()
     await page.getByTestId('update-workout-button').click()
 
     await expect(page).toHaveURL('/')
@@ -133,10 +133,10 @@ test.describe('Edit Workout page', () => {
 
     await clickWorkoutAction(page, name, 'Edit')
 
-    await expect(page.getByTestId('exercise-name-input-0')).toHaveValue(
+    await expect(page.getByTestId('exercise-name-input-0-0')).toHaveValue(
       'Push-ups'
     )
-    await expect(page.getByTestId('exercise-name-input-1')).not.toBeVisible()
+    await expect(page.getByTestId('exercise-name-input-0-1')).not.toBeVisible()
   })
 
   test('cancels edit and returns to home', async ({ page }) => {

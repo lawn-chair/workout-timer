@@ -15,7 +15,7 @@ test.describe('Navigation', () => {
   test('workout creation navigates to home', async ({ page }) => {
     await page.goto('/workouts/new')
     await page.getByTestId('workout-name-input').fill('Nav Test')
-    await page.getByTestId('exercise-name-input-0').fill('Test')
+    await page.getByTestId('exercise-name-input-0-0').fill('Test')
     await page.getByTestId('create-workout-button').click()
     await expect(page).toHaveURL('/')
   })
@@ -28,9 +28,9 @@ test.describe('Navigation', () => {
   test('workout list shows correct exercise count', async ({ page }) => {
     await page.goto('/workouts/new')
     await page.getByTestId('workout-name-input').fill('Exercise Count Test')
-    await page.getByTestId('exercise-name-input-0').fill('Push-ups')
-    await page.getByTestId('add-exercise-button').click()
-    await page.getByTestId('exercise-name-input-1').fill('Squats')
+    await page.getByTestId('exercise-name-input-0-0').fill('Push-ups')
+    await page.getByTestId('add-exercise-button-0').click()
+    await page.getByTestId('exercise-name-input-0-1').fill('Squats')
     await page.getByTestId('create-workout-button').click()
 
     await expect(page.getByText('2 exercises')).toBeVisible()

@@ -7,7 +7,7 @@ const mockWorkout = {
   id: '1',
   name: 'Test Workout',
   description: 'Test description',
-  exercises: [],
+  sets: [],
   createdAt: new Date(),
   updatedAt: new Date(),
 }
@@ -51,7 +51,7 @@ describe('workout store', () => {
     it('should create workout via API', async () => {
       const data: WorkoutFormData = {
         name: 'New Workout',
-        exercises: [],
+        sets: [],
       }
 
       vi.mocked(fetch).mockResolvedValue({

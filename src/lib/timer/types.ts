@@ -1,17 +1,23 @@
-export interface Exercise {
+export interface SetExercise {
   id: string
   name: string
   workDuration: number
-  restDuration: number
-  sets: number
+}
+
+export interface WorkoutSet {
+  id: string
+  order: number
+  repeatCount: number
+  restBetweenExercises: number
   restBetweenSets: number
+  exercises: SetExercise[]
 }
 
 export interface Workout {
   id: string
   name: string
   description?: string
-  exercises: Exercise[]
+  sets: WorkoutSet[]
 }
 
 export type TimerPhase =
@@ -25,8 +31,9 @@ export type TimerPhase =
 export interface TimerState {
   workout: Workout | null
   phase: TimerPhase
+  currentSetIndex: number
   currentExerciseIndex: number
-  currentSet: number
+  currentRepeat: number
   timeRemaining: number
   totalTimeElapsed: number
   isRunning: boolean
@@ -41,9 +48,17 @@ export interface TimerState {
 }
 
 export function getTotalWorkoutTime(workout: Workout): number {
-  return workout.exercises.reduce((total, ex) => {
-    const setTime = (ex.workDuration + ex.restDuration) * ex.sets
-    const restBetweenSetsTime = ex.restBetweenSets * (ex.sets - 1)
-    return total + setTime + restBetweenSetsTime
+  return workout.sets.reduce((total, set, setIndex) => {
+    const exerciseWork = set.exercises.reduce(
+      (sum, ex) => sum + ex.workDuration,
+      0
+    )
+    const restBetweenExercisesTime =
+      set.restBetweenExercises * Math.max(set.exercises.length - 1, 0)
+    const setTime = exerciseWork + restBetweenExercisesTime
+    const repeatedTime = setTime * Math.max(set.repeatCount, 1)
+    const restBetweenSetsTime =
+      setIndex < workout.sets.length - 1 ? set.restBetweenSets : 0
+    return total + repeatedTime + restBetweenSetsTime
   }, 0)
 }

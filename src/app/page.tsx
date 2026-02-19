@@ -64,14 +64,7 @@ export default function Home() {
       id: workout.id,
       name: workout.name,
       description: workout.description,
-      exercises: workout.exercises.map((ex) => ({
-        id: ex.id,
-        name: ex.name,
-        workDuration: ex.workDuration,
-        restDuration: ex.restDuration,
-        sets: ex.sets,
-        restBetweenSets: ex.restBetweenSets,
-      })),
+      sets: workout.sets,
     })
     router.push('/timer')
   }
@@ -147,7 +140,13 @@ export default function Home() {
                           </p>
                         )}
                         <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                          <span>{workout.exercises.length} exercises</span>
+                          <span>
+                            {workout.sets.reduce(
+                              (sum, set) => sum + set.exercises.length,
+                              0
+                            )}{' '}
+                            exercises
+                          </span>
                         </div>
                       </div>
                       <Link
@@ -233,14 +232,14 @@ export default function Home() {
                         </div>
                       )}
                       <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                        <span>{workout.exercises.length} exercises</span>
                         <span>
-                          {workout.exercises.reduce(
-                            (sum, ex) => sum + ex.sets,
+                          {workout.sets.reduce(
+                            (sum, set) => sum + set.exercises.length,
                             0
                           )}{' '}
-                          total sets
+                          exercises
                         </span>
+                        <span>{workout.sets.length} sets</span>
                         {workout.isPublic && (
                           <span className="text-blue-400">Public</span>
                         )}

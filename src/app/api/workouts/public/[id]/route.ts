@@ -13,7 +13,12 @@ export async function GET(
         OR: [{ id }, { slug: id }],
         isPublic: true,
       },
-      include: { exercises: { orderBy: { order: 'asc' } } },
+      include: {
+        sets: {
+          orderBy: { order: 'asc' },
+          include: { exercises: { orderBy: { order: 'asc' } } },
+        },
+      },
     })
 
     if (!workout) {

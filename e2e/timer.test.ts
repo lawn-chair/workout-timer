@@ -4,7 +4,7 @@ test.describe('Timer page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/workouts/new')
     await page.getByTestId('workout-name-input').fill('Timer Test Workout')
-    await page.getByTestId('exercise-name-input-0').fill('Jumping Jacks')
+    await page.getByTestId('exercise-name-input-0-0').fill('Jumping Jacks')
     await page.getByTestId('create-workout-button').click()
   })
 
