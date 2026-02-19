@@ -34,6 +34,7 @@ export default function TimerDisplay() {
   return (
     <div
       className={`min-h-screen flex flex-col items-center justify-center ${phaseColors[phase]} transition-colors duration-500`}
+      data-testid="timer-display"
     >
       <div className="text-center text-white">
         {phase === 'complete' ? (
@@ -43,7 +44,10 @@ export default function TimerDisplay() {
           </div>
         ) : (
           <>
-            <p className="text-2xl font-medium mb-4 opacity-90">
+            <p
+              className="text-2xl font-medium mb-4 opacity-90"
+              data-testid="timer-phase"
+            >
               {phaseLabels[phase]}
             </p>
 
