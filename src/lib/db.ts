@@ -6,8 +6,17 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
+  const explicitUrl = process.env.DATABASE_URL
+  const isTestEnv =
+    process.env.NODE_ENV === 'test' || process.env.VITEST === 'true'
+  const isE2E = process.env.E2E_TESTING === 'true'
+
+  const url =
+    explicitUrl ||
+    (isTestEnv ? 'file:./test.db' : isE2E ? 'file:./e2e.db' : 'file:./dev.db')
+
   const adapter = new PrismaLibSql({
-    url: process.env.DATABASE_URL || 'file:./dev.db',
+    url,
   })
   return new PrismaClient({ adapter })
 }
