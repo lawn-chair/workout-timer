@@ -1,101 +1,137 @@
 'use client'
 
-import { useEffect } from 'react'
-import TimerDisplay from '@/components/timer/TimerDisplay'
-import TimerControls from '@/components/timer/TimerControls'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import {
+  Workout,
+  getWorkouts,
+  seedSampleWorkouts,
+  deleteWorkout,
+} from '@/lib/workout/store'
 import { useTimerStore } from '@/lib/timer/store'
-import { useTimer } from '@/lib/timer/useTimer'
-import { useTimerAudio } from '@/lib/timer/useTimerAudio'
-import { Workout } from '@/lib/timer/types'
 
-const sampleWorkout: Workout = {
-  id: '1',
-  name: 'Sample HIIT',
-  description: 'A quick HIIT workout',
-  exercises: [
-    {
-      id: '1',
-      name: 'Jumping Jacks',
-      workDuration: 30,
-      restDuration: 10,
-      sets: 3,
-      restBetweenSets: 30,
-    },
-    {
-      id: '2',
-      name: 'Squats',
-      workDuration: 30,
-      restDuration: 10,
-      sets: 3,
-      restBetweenSets: 30,
-    },
-    {
-      id: '3',
-      name: 'Push-ups',
-      workDuration: 30,
-      restDuration: 10,
-      sets: 3,
-      restBetweenSets: 30,
-    },
-    {
-      id: '4',
-      name: 'Burpees',
-      workDuration: 30,
-      restDuration: 10,
-      sets: 3,
-      restBetweenSets: 0,
-    },
-  ],
-}
-
-export default function TimerPage() {
-  const { phase, loadWorkout, start } = useTimerStore()
-
-  useTimer()
-  useTimerAudio()
+export default function Home() {
+  const router = useRouter()
+  const [workouts, setWorkouts] = useState<Workout[]>([])
+  const [loading, setLoading] = useState(true)
+  const loadWorkout = useTimerStore((s) => s.loadWorkout)
 
   useEffect(() => {
-    loadWorkout(sampleWorkout)
-  }, [loadWorkout])
+    seedSampleWorkouts()
+    setWorkouts(getWorkouts())
+    setLoading(false)
+  }, [])
 
-  if (phase === 'idle') {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!confirm('Delete this workout?')) return
+    deleteWorkout(id)
+    setWorkouts(getWorkouts())
+  }
+
+  const handleStart = (workout: Workout) => {
+    loadWorkout({
+      id: workout.id,
+      name: workout.name,
+      description: workout.description,
+      exercises: workout.exercises.map((ex) => ({
+        id: ex.id,
+        name: ex.name,
+        workDuration: ex.workDuration,
+        restDuration: ex.restDuration,
+        sets: ex.sets,
+        restBetweenSets: ex.restBetweenSets,
+      })),
+    })
+    router.push('/timer')
+  }
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="text-center text-white max-w-md">
-          <h1 className="text-4xl font-bold mb-4">{sampleWorkout.name}</h1>
-          <p className="text-gray-400 mb-8">{sampleWorkout.description}</p>
-
-          <div className="space-y-2 mb-8 text-left">
-            {sampleWorkout.exercises.map((ex, i) => (
-              <div
-                key={ex.id}
-                className="bg-gray-800 rounded-lg p-3 flex justify-between items-center"
-              >
-                <span>
-                  {i + 1}. {ex.name}
-                </span>
-                <span className="text-gray-400 text-sm">
-                  {ex.sets} × {ex.workDuration}s work / {ex.restDuration}s rest
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={start}
-            className="w-full py-4 bg-green-500 hover:bg-green-600 text-white text-xl font-bold rounded-lg transition-colors"
-          >
-            Start Workout
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
       </div>
     )
   }
 
   return (
-    <>
-      <TimerDisplay />
-      <TimerControls />
-    </>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <header className="p-4 border-b border-gray-800">
+        <div className="max-w-2xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Workout Timer</h1>
+          <Link
+            href="/workouts/new"
+            className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
+          >
+            + New Workout
+          </Link>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto p-4">
+        {workouts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-400 mb-4">No workouts yet</p>
+            <Link
+              href="/workouts/new"
+              className="text-green-500 hover:text-green-400"
+            >
+              Create your first workout
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {workouts.map((workout) => (
+              <div
+                key={workout.id}
+                className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold">{workout.name}</h2>
+                    {workout.description && (
+                      <p className="text-gray-400 text-sm mt-1">
+                        {workout.description}
+                      </p>
+                    )}
+                    <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                      <span>{workout.exercises.length} exercises</span>
+                      <span>
+                        {workout.exercises.reduce(
+                          (sum, ex) => sum + ex.sets,
+                          0
+                        )}{' '}
+                        total sets
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <button
+                      onClick={() => handleStart(workout)}
+                      className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
+                    >
+                      Start
+                    </button>
+                    <Link
+                      href={`/workouts/${workout.id}/edit`}
+                      className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={(e) => handleDelete(workout.id, e)}
+                      className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-red-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
   )
 }

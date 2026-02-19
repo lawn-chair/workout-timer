@@ -132,6 +132,19 @@
 
 ---
 
+## Testing
+
+- **Unit Tests**: Vitest for business logic, stores, utilities
+- **Component Tests**: React Testing Library for UI components
+- **E2E Tests**: Playwright for full-page flows
+  - Home page: workout list, create, delete
+  - Workout builder: create workout with exercises
+  - Edit workout: load and update workout
+  - Timer: start, pause, resume, complete workout
+  - Dynamic routes: verify params are handled correctly
+
+---
+
 ## Open Questions
 
 - [ ] Voice announcements (e.g., "Rest", "Go")?

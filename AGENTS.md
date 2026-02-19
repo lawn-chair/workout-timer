@@ -34,9 +34,23 @@ npm run check        # lint + typecheck + tests
 
 ## Testing
 
+**Always write tests for new features and bug fixes.** This is required for every change.
+
 - Framework: Vitest + React Testing Library
-- Test files: `*.{test,spec}.{ts,tsx}` in `src/`
+- Test files: `*.{test,spec}.{ts,tsx}` in `src/`, co-located with the code they test
 - Setup: `src/test/setup.ts` (includes jest-dom matchers)
+
+### When to write tests
+
+- Add new feature → write tests
+- Fix a bug → write a test that reproduces the bug first, then fix it
+- Refactor code → ensure existing tests still pass
+
+### What to test
+
+- Business logic (store/state management): always write unit tests
+- Utility functions: write unit tests
+- React components: write component tests for user interactions and rendering
 
 Example test:
 
