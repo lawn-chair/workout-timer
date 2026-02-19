@@ -33,6 +33,16 @@ test.describe('Navigation', () => {
     await page.getByTestId('exercise-name-input-0-1').fill('Squats')
     await page.getByTestId('create-workout-button').click()
 
-    await expect(page.getByText('2 exercises').first()).toBeVisible()
+    const card = page
+      .locator('[data-testid^="workout-card-"]', {
+        hasText: 'Exercise Count Test',
+      })
+      .first()
+    const cardId = await card.getAttribute('data-testid')
+    const workoutId = cardId?.replace('workout-card-', '')
+    expect(workoutId).toBeTruthy()
+    await expect(page.getByTestId(`stat-exercises-${workoutId}`)).toHaveText(
+      '2'
+    )
   })
 })
