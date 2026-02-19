@@ -25,6 +25,13 @@ npm run typecheck    # TypeScript type check
 npm run check        # lint + typecheck + tests
 ```
 
+## Workflow Defaults
+
+- Always write a plan to a descriptive `/docs/*.md` file before implementation.
+- Always create a new branch for work.
+- Auto-commit after each task, including both feature and tests when practical.
+- Run `npm run check` before opening a PR, and only open the PR after tests pass.
+
 ## Project Structure
 
 - `src/app/` - Next.js App Router pages
