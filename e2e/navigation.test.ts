@@ -33,6 +33,6 @@ test.describe('Navigation', () => {
     await page.getByTestId('exercise-name-input-0-1').fill('Squats')
     await page.getByTestId('create-workout-button').click()
 
-    await expect(page.getByText('2 exercises')).toBeVisible()
+    await expect(page.getByText('2 exercises').first()).toBeVisible()
   })
 })

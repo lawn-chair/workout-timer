@@ -53,7 +53,9 @@ test.describe('Home page', () => {
     page.on('dialog', (dialog) => dialog.accept())
 
     // Wait for the created workout to appear on the page
-    await expect(page.getByText('Workout to Delete')).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Workout to Delete' }).first()
+    ).toBeVisible()
 
     const deleteButton = page.getByTestId(/delete-workout-/)
     const initialCount = await deleteButton.count()
@@ -61,7 +63,9 @@ test.describe('Home page', () => {
 
     await deleteButton.first().click()
 
-    await expect(page.getByText('Workout to Delete')).not.toBeVisible({
+    await expect(
+      page.getByRole('heading', { name: 'Workout to Delete' }).first()
+    ).not.toBeVisible({
       timeout: 10000,
     })
   })

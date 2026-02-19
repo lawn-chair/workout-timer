@@ -11,7 +11,9 @@ test.describe('New Workout page', () => {
     await page.getByTestId('create-workout-button').click()
 
     await expect(page).toHaveURL('/')
-    await expect(page.getByText('My Test Workout')).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'My Test Workout' }).first()
+    ).toBeVisible()
   })
 
   test('creates workout with multiple exercises', async ({ page }) => {
@@ -27,7 +29,9 @@ test.describe('New Workout page', () => {
     await page.getByTestId('create-workout-button').click()
 
     await expect(page).toHaveURL('/')
-    await expect(page.getByText('Multi Exercise Workout')).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Multi Exercise Workout' }).first()
+    ).toBeVisible()
   })
 
   test('removes exercise from form', async ({ page }) => {
