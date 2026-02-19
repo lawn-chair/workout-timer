@@ -31,7 +31,12 @@ export async function GET(
 
     const workout = await prisma.workout.findUnique({
       where: { id },
-      include: { exercises: { orderBy: { order: 'asc' } } },
+      include: {
+        sets: {
+          orderBy: { order: 'asc' },
+          include: { exercises: { orderBy: { order: 'asc' } } },
+        },
+      },
     })
 
     if (!workout) {
@@ -73,7 +78,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { name, description, isPublic, tags, exercises } = body
+    const { name, description, isPublic, tags, sets } = body
 
     const updateData: {
       name?: string
@@ -91,36 +96,59 @@ export async function PATCH(
     if (isPublic !== undefined) updateData.isPublic = isPublic
     if (tags !== undefined) updateData.tags = tags
 
-    if (exercises !== undefined) {
-      await prisma.exercise.deleteMany({ where: { workoutId: id } })
-      await prisma.exercise.createMany({
-        data: exercises.map(
+    if (sets !== undefined) {
+      await prisma.setExercise.deleteMany({
+        where: { set: { workoutId: id } },
+      })
+      await prisma.workoutSet.deleteMany({ where: { workoutId: id } })
+
+      const createdSets = await prisma.workoutSet.createManyAndReturn({
+        data: sets.map(
           (
-            ex: {
-              name: string
-              workDuration: number
-              restDuration: number
-              sets: number
+            set: {
+              repeatCount: number
+              restBetweenExercises: number
               restBetweenSets: number
+              exercises: { name: string; workDuration: number }[]
             },
             index: number
           ) => ({
-            name: ex.name,
-            workDuration: ex.workDuration || 30,
-            restDuration: ex.restDuration || 10,
-            sets: ex.sets || 1,
-            restBetweenSets: ex.restBetweenSets || 60,
             order: index,
+            repeatCount: set.repeatCount || 1,
+            restBetweenExercises: set.restBetweenExercises || 0,
+            restBetweenSets: set.restBetweenSets || 0,
             workoutId: id,
           })
         ),
       })
+
+      createdSets.sort((a, b) => a.order - b.order)
+
+      for (const set of createdSets) {
+        const incoming = sets[set.order]
+        if (!incoming?.exercises?.length) continue
+        await prisma.setExercise.createMany({
+          data: incoming.exercises.map(
+            (ex: { name: string; workDuration: number }, exIndex: number) => ({
+              name: ex.name,
+              workDuration: ex.workDuration || 30,
+              order: exIndex,
+              setId: set.id,
+            })
+          ),
+        })
+      }
     }
 
     const updatedWorkout = await prisma.workout.update({
       where: { id },
       data: updateData,
-      include: { exercises: { orderBy: { order: 'asc' } } },
+      include: {
+        sets: {
+          orderBy: { order: 'asc' },
+          include: { exercises: { orderBy: { order: 'asc' } } },
+        },
+      },
     })
 
     return NextResponse.json(updatedWorkout)

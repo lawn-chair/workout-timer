@@ -15,7 +15,12 @@ export async function POST(
 
     const sourceWorkout = await prisma.workout.findUnique({
       where: { id },
-      include: { exercises: { orderBy: { order: 'asc' } } },
+      include: {
+        sets: {
+          orderBy: { order: 'asc' },
+          include: { exercises: { orderBy: { order: 'asc' } } },
+        },
+      },
     })
 
     if (!sourceWorkout) {
@@ -39,18 +44,28 @@ export async function POST(
         tags: sourceWorkout.tags,
         isPublic: false,
         userId: user.id,
-        exercises: {
-          create: sourceWorkout.exercises.map((ex) => ({
-            name: ex.name,
-            workDuration: ex.workDuration,
-            restDuration: ex.restDuration,
-            sets: ex.sets,
-            restBetweenSets: ex.restBetweenSets,
-            order: ex.order,
+        sets: {
+          create: sourceWorkout.sets.map((set) => ({
+            order: set.order,
+            repeatCount: set.repeatCount,
+            restBetweenExercises: set.restBetweenExercises,
+            restBetweenSets: set.restBetweenSets,
+            exercises: {
+              create: set.exercises.map((ex) => ({
+                name: ex.name,
+                workDuration: ex.workDuration,
+                order: ex.order,
+              })),
+            },
           })),
         },
       },
-      include: { exercises: { orderBy: { order: 'asc' } } },
+      include: {
+        sets: {
+          orderBy: { order: 'asc' },
+          include: { exercises: { orderBy: { order: 'asc' } } },
+        },
+      },
     })
 
     return NextResponse.json(clonedWorkout)

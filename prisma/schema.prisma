@@ -23,7 +23,7 @@ model Workout {
   description String?
   slug        String?    @unique
   tags        String     @default("")
-  exercises   Exercise[]
+  sets        WorkoutSet[]
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   isPublic    Boolean    @default(false)
@@ -31,14 +31,22 @@ model Workout {
   updatedAt   DateTime   @updatedAt
 }
 
-model Exercise {
-  id              String   @id @default(cuid())
-  name            String
-  workDuration    Int      @default(30)
-  restDuration    Int      @default(10)
-  sets            Int      @default(1)
-  restBetweenSets Int      @default(60)
-  order           Int
-  workout         Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  workoutId       String
+model WorkoutSet {
+  id                   String        @id @default(cuid())
+  order                Int
+  repeatCount          Int           @default(1)
+  restBetweenExercises Int           @default(0)
+  restBetweenSets      Int           @default(0)
+  exercises            SetExercise[]
+  workout              Workout       @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  workoutId            String
+}
+
+model SetExercise {
+  id           String     @id @default(cuid())
+  name         String
+  workDuration Int        @default(30)
+  order        Int
+  set          WorkoutSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+  setId        String
 }

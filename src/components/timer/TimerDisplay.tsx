@@ -26,10 +26,17 @@ function formatTime(seconds: number): string {
 }
 
 export default function TimerDisplay() {
-  const { phase, timeRemaining, workout, currentExerciseIndex, currentSet } =
-    useTimerStore()
+  const {
+    phase,
+    timeRemaining,
+    workout,
+    currentSetIndex,
+    currentExerciseIndex,
+    currentRepeat,
+  } = useTimerStore()
 
-  const currentExercise = workout?.exercises[currentExerciseIndex]
+  const currentSet = workout?.sets[currentSetIndex]
+  const currentExercise = currentSet?.exercises[currentExerciseIndex]
 
   return (
     <div
@@ -55,9 +62,11 @@ export default function TimerDisplay() {
               {currentExercise?.name || 'Exercise'}
             </p>
 
-            {currentExercise && (
+            {currentSet && currentExercise && (
               <p className="text-xl mb-8 opacity-75">
-                Set {currentSet} of {currentExercise.sets}
+                Set {currentSetIndex + 1} of {workout?.sets.length || 0} · Rep{' '}
+                {currentRepeat} of {currentSet.repeatCount} · Exercise{' '}
+                {currentExerciseIndex + 1} of {currentSet.exercises.length}
               </p>
             )}
 

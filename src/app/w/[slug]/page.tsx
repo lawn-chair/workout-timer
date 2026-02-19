@@ -50,14 +50,7 @@ export default function PublicWorkoutPage() {
       id: workout.id,
       name: workout.name,
       description: workout.description,
-      exercises: workout.exercises.map((ex) => ({
-        id: ex.id,
-        name: ex.name,
-        workDuration: ex.workDuration,
-        restDuration: ex.restDuration,
-        sets: ex.sets,
-        restBetweenSets: ex.restBetweenSets,
-      })),
+      sets: workout.sets,
     })
     router.push('/timer')
   }
@@ -134,29 +127,40 @@ export default function PublicWorkoutPage() {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold mb-4">Exercises</h2>
+        <h2 className="text-xl font-bold mb-4">Sets</h2>
         <div className="space-y-3">
-          {workout.exercises.map((exercise, index) => (
-            <div key={exercise.id} className="bg-gray-800 rounded-lg p-4">
-              <div className="flex justify-between items-center">
+          {workout.sets.map((set, setIndex) => (
+            <div key={set.id} className="bg-gray-800 rounded-lg p-4">
+              <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-lg">
-                    {index + 1}. {exercise.name}
-                  </h3>
+                  <h3 className="font-semibold text-lg">Set {setIndex + 1}</h3>
                   <div className="text-gray-400 text-sm mt-1">
-                    <span>{exercise.sets} sets</span>
+                    <span>{set.exercises.length} exercises</span>
                     <span className="mx-2">•</span>
-                    <span>{exercise.workDuration}s work</span>
-                    <span className="mx-2">•</span>
-                    <span>{exercise.restDuration}s rest</span>
-                    {exercise.restBetweenSets > 0 && (
+                    <span>Repeat {set.repeatCount}x</span>
+                    {set.restBetweenExercises > 0 && (
                       <>
                         <span className="mx-2">•</span>
-                        <span>{exercise.restBetweenSets}s between sets</span>
+                        <span>
+                          {set.restBetweenExercises}s between exercises
+                        </span>
+                      </>
+                    )}
+                    {set.restBetweenSets > 0 && (
+                      <>
+                        <span className="mx-2">•</span>
+                        <span>{set.restBetweenSets}s between sets</span>
                       </>
                     )}
                   </div>
                 </div>
+              </div>
+              <div className="mt-3 space-y-2">
+                {set.exercises.map((exercise, index) => (
+                  <div key={exercise.id} className="text-gray-300 text-sm">
+                    {index + 1}. {exercise.name} · {exercise.workDuration}s work
+                  </div>
+                ))}
               </div>
             </div>
           ))}

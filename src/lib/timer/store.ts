@@ -1,116 +1,144 @@
 import { create } from 'zustand'
-import { TimerState, TimerPhase, Workout, Exercise } from './types'
+import {
+  TimerState,
+  TimerPhase,
+  Workout,
+  WorkoutSet,
+  SetExercise,
+} from './types'
 
 const COUNTDOWN_SECONDS = 3
 
+function getSetAtIndex(workout: Workout, setIndex: number): WorkoutSet | null {
+  if (setIndex >= workout.sets.length) return null
+  return workout.sets[setIndex]
+}
+
 function getExerciseAtIndex(
   workout: Workout,
+  setIndex: number,
   exerciseIndex: number
-): Exercise | null {
-  if (exerciseIndex >= workout.exercises.length) return null
-  return workout.exercises[exerciseIndex]
+): SetExercise | null {
+  const set = getSetAtIndex(workout, setIndex)
+  if (!set) return null
+  if (exerciseIndex >= set.exercises.length) return null
+  return set.exercises[exerciseIndex]
 }
 
 function getNextPhase(
   workout: Workout,
+  setIndex: number,
   exerciseIndex: number,
-  currentSet: number,
+  currentRepeat: number,
   currentPhase: TimerPhase
 ): {
   phase: TimerPhase
+  setIndex: number
   exerciseIndex: number
-  set: number
+  repeat: number
   time: number
 } | null {
-  const exercise = getExerciseAtIndex(workout, exerciseIndex)
+  const set = getSetAtIndex(workout, setIndex)
+  if (!set) return null
+  const exercise = getExerciseAtIndex(workout, setIndex, exerciseIndex)
   if (!exercise) return null
 
   if (currentPhase === 'countdown') {
     return {
       phase: 'work',
+      setIndex,
       exerciseIndex,
-      set: currentSet,
+      repeat: currentRepeat,
       time: exercise.workDuration,
     }
   }
 
   if (currentPhase === 'work') {
-    if (exercise.restDuration > 0) {
-      return {
-        phase: 'rest',
-        exerciseIndex,
-        set: currentSet,
-        time: exercise.restDuration,
-      }
-    }
-    if (currentSet < exercise.sets) {
-      return {
-        phase: 'work',
-        exerciseIndex,
-        set: currentSet + 1,
-        time: exercise.workDuration,
-      }
-    }
-    if (exerciseIndex + 1 < workout.exercises.length) {
-      const nextExercise = workout.exercises[exerciseIndex + 1]
-      if (exercise.restBetweenSets > 0) {
+    const isLastExercise = exerciseIndex >= set.exercises.length - 1
+    if (!isLastExercise) {
+      if (set.restBetweenExercises > 0) {
         return {
-          phase: 'restBetweenSets',
+          phase: 'rest',
+          setIndex,
           exerciseIndex,
-          set: currentSet,
-          time: exercise.restBetweenSets,
+          repeat: currentRepeat,
+          time: set.restBetweenExercises,
         }
       }
+      const nextExercise = set.exercises[exerciseIndex + 1]
       return {
         phase: 'work',
+        setIndex,
         exerciseIndex: exerciseIndex + 1,
-        set: 1,
+        repeat: currentRepeat,
         time: nextExercise.workDuration,
       }
     }
-    return { phase: 'complete', exerciseIndex, set: currentSet, time: 0 }
+
+    if (currentRepeat < set.repeatCount) {
+      const firstExercise = set.exercises[0]
+      return {
+        phase: 'work',
+        setIndex,
+        exerciseIndex: 0,
+        repeat: currentRepeat + 1,
+        time: firstExercise.workDuration,
+      }
+    }
+
+    if (setIndex < workout.sets.length - 1) {
+      if (set.restBetweenSets > 0) {
+        return {
+          phase: 'restBetweenSets',
+          setIndex,
+          exerciseIndex,
+          repeat: currentRepeat,
+          time: set.restBetweenSets,
+        }
+      }
+      const nextSet = workout.sets[setIndex + 1]
+      const nextExercise = nextSet.exercises[0]
+      return {
+        phase: 'work',
+        setIndex: setIndex + 1,
+        exerciseIndex: 0,
+        repeat: 1,
+        time: nextExercise.workDuration,
+      }
+    }
+
+    return {
+      phase: 'complete',
+      setIndex,
+      exerciseIndex,
+      repeat: currentRepeat,
+      time: 0,
+    }
   }
 
   if (currentPhase === 'rest') {
-    const nextSet = currentSet + 1
-    if (nextSet <= exercise.sets) {
-      return {
-        phase: 'work',
-        exerciseIndex,
-        set: nextSet,
-        time: exercise.workDuration,
-      }
+    const nextExercise = set.exercises[exerciseIndex + 1]
+    if (!nextExercise) return null
+    return {
+      phase: 'work',
+      setIndex,
+      exerciseIndex: exerciseIndex + 1,
+      repeat: currentRepeat,
+      time: nextExercise.workDuration,
     }
-    if (exerciseIndex + 1 < workout.exercises.length) {
-      if (exercise.restBetweenSets > 0) {
-        return {
-          phase: 'restBetweenSets',
-          exerciseIndex,
-          set: currentSet,
-          time: exercise.restBetweenSets,
-        }
-      }
-      return {
-        phase: 'work',
-        exerciseIndex: exerciseIndex + 1,
-        set: 1,
-        time: workout.exercises[exerciseIndex + 1].workDuration,
-      }
-    }
-    return { phase: 'complete', exerciseIndex, set: currentSet, time: 0 }
   }
 
   if (currentPhase === 'restBetweenSets') {
-    if (exerciseIndex + 1 < workout.exercises.length) {
-      const nextExercise = workout.exercises[exerciseIndex + 1]
-      return {
-        phase: 'work',
-        exerciseIndex: exerciseIndex + 1,
-        set: 1,
-        time: nextExercise.workDuration,
-      }
+    const nextSet = workout.sets[setIndex + 1]
+    if (!nextSet) return null
+    const nextExercise = nextSet.exercises[0]
+    return {
+      phase: 'work',
+      setIndex: setIndex + 1,
+      exerciseIndex: 0,
+      repeat: 1,
+      time: nextExercise.workDuration,
     }
-    return { phase: 'complete', exerciseIndex, set: currentSet, time: 0 }
   }
 
   return null
@@ -119,8 +147,9 @@ function getNextPhase(
 export const useTimerStore = create<TimerState>((set, get) => ({
   workout: null,
   phase: 'idle',
+  currentSetIndex: 0,
   currentExerciseIndex: 0,
-  currentSet: 1,
+  currentRepeat: 1,
   timeRemaining: 0,
   totalTimeElapsed: 0,
   isRunning: false,
@@ -129,8 +158,9 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     set({
       workout,
       phase: 'idle',
+      currentSetIndex: 0,
       currentExerciseIndex: 0,
-      currentSet: 1,
+      currentRepeat: 1,
       timeRemaining: 0,
       totalTimeElapsed: 0,
       isRunning: false,
@@ -139,12 +169,13 @@ export const useTimerStore = create<TimerState>((set, get) => ({
 
   start: () => {
     const { workout } = get()
-    if (!workout || workout.exercises.length === 0) return
+    if (!workout || workout.sets.length === 0) return
 
     set({
       phase: 'countdown',
+      currentSetIndex: 0,
       currentExerciseIndex: 0,
-      currentSet: 1,
+      currentRepeat: 1,
       timeRemaining: COUNTDOWN_SECONDS,
       totalTimeElapsed: 0,
       isRunning: true,
@@ -156,15 +187,28 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   resume: () => set({ isRunning: true }),
 
   skip: () => {
-    const { workout, currentExerciseIndex, currentSet, phase } = get()
+    const {
+      workout,
+      currentSetIndex,
+      currentExerciseIndex,
+      currentRepeat,
+      phase,
+    } = get()
     if (!workout) return
 
-    const next = getNextPhase(workout, currentExerciseIndex, currentSet, phase)
+    const next = getNextPhase(
+      workout,
+      currentSetIndex,
+      currentExerciseIndex,
+      currentRepeat,
+      phase
+    )
     if (next) {
       set({
         phase: next.phase,
+        currentSetIndex: next.setIndex,
         currentExerciseIndex: next.exerciseIndex,
-        currentSet: next.set,
+        currentRepeat: next.repeat,
         timeRemaining: next.time,
       })
     }
@@ -173,8 +217,9 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   stop: () => {
     set({
       phase: 'idle',
+      currentSetIndex: 0,
       currentExerciseIndex: 0,
-      currentSet: 1,
+      currentRepeat: 1,
       timeRemaining: 0,
       isRunning: false,
     })
@@ -186,23 +231,26 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       timeRemaining,
       totalTimeElapsed,
       workout,
+      currentSetIndex,
       currentExerciseIndex,
-      currentSet,
+      currentRepeat,
     } = get()
     if (!workout || !get().isRunning) return
 
     if (timeRemaining <= 1) {
       const next = getNextPhase(
         workout,
+        currentSetIndex,
         currentExerciseIndex,
-        currentSet,
+        currentRepeat,
         phase
       )
       if (next) {
         set({
           phase: next.phase,
+          currentSetIndex: next.setIndex,
           currentExerciseIndex: next.exerciseIndex,
-          currentSet: next.set,
+          currentRepeat: next.repeat,
           timeRemaining: next.time,
           totalTimeElapsed: totalTimeElapsed + 1,
           isRunning: next.phase !== 'complete',

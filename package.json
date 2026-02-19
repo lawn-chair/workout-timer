@@ -64,7 +64,7 @@
       "prettier --write"
     ],
     "src/**/*.{ts,tsx}": [
-      "vitest run"
+      "vitest run --passWithNoTests"
     ]
   }
 }

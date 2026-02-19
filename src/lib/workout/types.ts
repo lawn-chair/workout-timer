@@ -1,11 +1,17 @@
-export interface Exercise {
+export interface SetExercise {
   id: string
   name: string
   workDuration: number
-  restDuration: number
-  sets: number
-  restBetweenSets: number
   order: number
+}
+
+export interface WorkoutSet {
+  id: string
+  order: number
+  repeatCount: number
+  restBetweenExercises: number
+  restBetweenSets: number
+  exercises: SetExercise[]
 }
 
 export interface Workout {
@@ -15,7 +21,7 @@ export interface Workout {
   slug?: string
   tags?: string
   isPublic?: boolean
-  exercises: Exercise[]
+  sets: WorkoutSet[]
   createdAt: Date
   updatedAt: Date
 }
@@ -25,11 +31,13 @@ export interface WorkoutFormData {
   description?: string
   isPublic?: boolean
   tags?: string
-  exercises: {
-    name: string
-    workDuration: number
-    restDuration: number
-    sets: number
+  sets: {
+    repeatCount: number
+    restBetweenExercises: number
     restBetweenSets: number
+    exercises: {
+      name: string
+      workDuration: number
+    }[]
   }[]
 }

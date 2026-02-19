@@ -5,7 +5,12 @@ export async function GET() {
   try {
     const workouts = await prisma.workout.findMany({
       where: { isPublic: true },
-      include: { exercises: { orderBy: { order: 'asc' } } },
+      include: {
+        sets: {
+          orderBy: { order: 'asc' },
+          include: { exercises: { orderBy: { order: 'asc' } } },
+        },
+      },
       orderBy: { updatedAt: 'desc' },
     })
 
