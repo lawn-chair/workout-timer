@@ -21,6 +21,8 @@ model Workout {
   id          String     @id @default(cuid())
   name        String
   description String?
+  slug        String?    @unique
+  tags        String     @default("")
   exercises   Exercise[]
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
