@@ -3,31 +3,60 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import {
-  Workout,
-  getWorkouts,
-  seedSampleWorkouts,
-  deleteWorkout,
-} from '@/lib/workout/store'
+import { useSession, signOut } from 'next-auth/react'
+import { useWorkoutStore, Workout } from '@/lib/workout/store'
 import { useTimerStore } from '@/lib/timer/store'
+import { fetchPublicWorkouts } from '@/lib/workout/api'
 
 export default function Home() {
   const router = useRouter()
-  const [workouts, setWorkouts] = useState<Workout[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: session, status } = useSession()
   const loadWorkout = useTimerStore((s) => s.loadWorkout)
 
-  useEffect(() => {
-    seedSampleWorkouts()
-    setWorkouts(getWorkouts())
-    setLoading(false)
-  }, [])
+  const { workouts, isLoading, fetchWorkouts, deleteWorkout } =
+    useWorkoutStore()
+  const [publicWorkouts, setPublicWorkouts] = useState<Workout[]>([])
+  const [showPublic, setShowPublic] = useState(false)
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const allTags = Array.from(
+    new Set(
+      workouts.flatMap((w) =>
+        (w.tags || '')
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      )
+    )
+  )
+
+  const filteredWorkouts = selectedTag
+    ? workouts.filter((w) =>
+        (w.tags || '')
+          .split(',')
+          .map((t) => t.trim())
+          .includes(selectedTag)
+      )
+    : workouts
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    } else if (status === 'authenticated') {
+      fetchWorkouts()
+    }
+  }, [status, router, fetchWorkouts])
+
+  useEffect(() => {
+    if (showPublic) {
+      fetchPublicWorkouts().then(setPublicWorkouts).catch(console.error)
+    }
+  }, [showPublic])
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault()
     if (!confirm('Delete this workout?')) return
-    deleteWorkout(id)
-    setWorkouts(getWorkouts())
+    await deleteWorkout(id)
   }
 
   const handleStart = (workout: Workout) => {
@@ -47,7 +76,7 @@ export default function Home() {
     router.push('/timer')
   }
 
-  if (loading) {
+  if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-white">Loading...</div>
@@ -60,18 +89,80 @@ export default function Home() {
       <header className="p-4 border-b border-gray-800">
         <div className="max-w-2xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">Workout Timer</h1>
-          <Link
-            href="/workouts/new"
-            className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
-            data-testid="new-workout-button"
-          >
-            + New Workout
-          </Link>
+          <div className="flex gap-2 items-center">
+            {session?.user && (
+              <span className="text-gray-400 text-sm mr-2">
+                {session.user.name}
+              </span>
+            )}
+            <button
+              onClick={() => setShowPublic(!showPublic)}
+              className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+            >
+              {showPublic ? 'My Workouts' : 'Browse Public'}
+            </button>
+            <Link
+              href="/workouts/new"
+              className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
+              data-testid="new-workout-button"
+            >
+              + New Workout
+            </Link>
+            <Link
+              href="/settings"
+              className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+            >
+              Settings
+            </Link>
+            <button
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto p-4">
-        {workouts.length === 0 ? (
+        {showPublic ? (
+          <>
+            <h2 className="text-xl font-bold mb-4">Public Workouts</h2>
+            {publicWorkouts.length === 0 ? (
+              <p className="text-gray-400">No public workouts available</p>
+            ) : (
+              <div className="space-y-3">
+                {publicWorkouts.map((workout) => (
+                  <div key={workout.id} className="bg-gray-800 rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <Link href={`/w/${workout.slug || workout.id}`}>
+                          <h3 className="text-xl font-semibold hover:text-green-500">
+                            {workout.name}
+                          </h3>
+                        </Link>
+                        {workout.description && (
+                          <p className="text-gray-400 text-sm mt-1">
+                            {workout.description}
+                          </p>
+                        )}
+                        <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                          <span>{workout.exercises.length} exercises</span>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/w/${workout.slug || workout.id}`}
+                        className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg ml-4"
+                      >
+                        View
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : workouts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-400 mb-4">No workouts yet</p>
             <Link
@@ -82,59 +173,107 @@ export default function Home() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-3">
-            {workouts.map((workout) => (
-              <div
-                key={workout.id}
-                className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
-                data-testid={`workout-card-${workout.id}`}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h2 className="text-xl font-semibold">{workout.name}</h2>
-                    {workout.description && (
-                      <p className="text-gray-400 text-sm mt-1">
-                        {workout.description}
-                      </p>
-                    )}
-                    <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                      <span>{workout.exercises.length} exercises</span>
-                      <span>
-                        {workout.exercises.reduce(
-                          (sum, ex) => sum + ex.sets,
-                          0
-                        )}{' '}
-                        total sets
-                      </span>
+          <>
+            {allTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  onClick={() => setSelectedTag(null)}
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    selectedTag === null
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  All
+                </button>
+                {allTags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => setSelectedTag(tag)}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      selectedTag === tag
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="space-y-3">
+              {filteredWorkouts.map((workout) => (
+                <div
+                  key={workout.id}
+                  className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
+                  data-testid={`workout-card-${workout.id}`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h2 className="text-xl font-semibold">{workout.name}</h2>
+                      {workout.description && (
+                        <p className="text-gray-400 text-sm mt-1">
+                          {workout.description}
+                        </p>
+                      )}
+                      {workout.tags && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {workout.tags
+                            .split(',')
+                            .map((t) => t.trim())
+                            .filter(Boolean)
+                            .map((tag) => (
+                              <span
+                                key={tag}
+                                className="bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full text-xs"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+                      <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                        <span>{workout.exercises.length} exercises</span>
+                        <span>
+                          {workout.exercises.reduce(
+                            (sum, ex) => sum + ex.sets,
+                            0
+                          )}{' '}
+                          total sets
+                        </span>
+                        {workout.isPublic && (
+                          <span className="text-blue-400">Public</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => handleStart(workout)}
+                        className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
+                        data-testid={`start-workout-${workout.id}`}
+                      >
+                        Start
+                      </button>
+                      <Link
+                        href={`/workouts/${workout.id}/edit`}
+                        className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+                        data-testid={`edit-workout-${workout.id}`}
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={(e) => handleDelete(workout.id, e)}
+                        className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-red-200"
+                        data-testid={`delete-workout-${workout.id}`}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleStart(workout)}
-                      className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium"
-                      data-testid={`start-workout-${workout.id}`}
-                    >
-                      Start
-                    </button>
-                    <Link
-                      href={`/workouts/${workout.id}/edit`}
-                      className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
-                      data-testid={`edit-workout-${workout.id}`}
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={(e) => handleDelete(workout.id, e)}
-                      className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-red-200"
-                      data-testid={`delete-workout-${workout.id}`}
-                    >
-                      Delete
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>

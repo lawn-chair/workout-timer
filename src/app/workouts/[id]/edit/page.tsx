@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateWorkout, getWorkout, WorkoutFormData } from '@/lib/workout/store'
+import { useWorkoutStore, WorkoutFormData } from '@/lib/workout/store'
+import { fetchWorkout } from '@/lib/workout/api'
 
 interface ExerciseField {
   name: string
@@ -10,22 +11,6 @@ interface ExerciseField {
   restDuration: number
   sets: number
   restBetweenSets: number
-}
-
-function getInitialData(id: string) {
-  const existing = getWorkout(id)
-  if (!existing) return null
-  return {
-    name: existing.name,
-    description: existing.description || '',
-    exercises: existing.exercises.map((ex) => ({
-      name: ex.name,
-      workDuration: ex.workDuration,
-      restDuration: ex.restDuration,
-      sets: ex.sets,
-      restBetweenSets: ex.restBetweenSets,
-    })),
-  }
 }
 
 export default function EditWorkoutPage({
@@ -36,12 +21,12 @@ export default function EditWorkoutPage({
   const { id } = React.use(params)
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [initialData, setInitialData] = useState<ReturnType<
-    typeof getInitialData
-  > | null>(null)
+  const [notFound, setNotFound] = useState(false)
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [tags, setTags] = useState('')
+  const [isPublic, setIsPublic] = useState(false)
   const [exercises, setExercises] = useState<ExerciseField[]>([
     {
       name: '',
@@ -53,19 +38,31 @@ export default function EditWorkoutPage({
   ])
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    const data = getInitialData(id)
-    setInitialData(data)
-    setLoading(false)
-  }, [id])
+  const { updateWorkout } = useWorkoutStore()
 
   useEffect(() => {
-    if (initialData) {
-      setName(initialData.name)
-      setDescription(initialData.description)
-      setExercises(initialData.exercises)
-    }
-  }, [initialData])
+    fetchWorkout(id)
+      .then((workout) => {
+        setName(workout.name)
+        setDescription(workout.description || '')
+        setTags(workout.tags || '')
+        setIsPublic(workout.isPublic || false)
+        setExercises(
+          workout.exercises.map((ex) => ({
+            name: ex.name,
+            workDuration: ex.workDuration,
+            restDuration: ex.restDuration,
+            sets: ex.sets,
+            restBetweenSets: ex.restBetweenSets,
+          }))
+        )
+        setLoading(false)
+      })
+      .catch(() => {
+        setNotFound(true)
+        setLoading(false)
+      })
+  }, [id])
 
   const addExercise = () => {
     setExercises([
@@ -103,6 +100,8 @@ export default function EditWorkoutPage({
     const data: WorkoutFormData = {
       name: name.trim(),
       description: description.trim() || undefined,
+      tags: tags.trim() || undefined,
+      isPublic,
       exercises: exercises
         .filter((ex) => ex.name.trim())
         .map((ex) => ({
@@ -114,7 +113,7 @@ export default function EditWorkoutPage({
         })),
     }
 
-    updateWorkout(id, data)
+    await updateWorkout(id, data)
     router.push('/')
   }
 
@@ -126,7 +125,7 @@ export default function EditWorkoutPage({
     )
   }
 
-  if (!initialData) {
+  if (notFound) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-white">Workout not found</div>
@@ -170,6 +169,35 @@ export default function EditWorkoutPage({
               rows={2}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Tags (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="e.g., HIIT, Strength, Cardio"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="isPublic"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="w-4 h-4 rounded bg-gray-800 border-gray-700"
+            />
+            <label
+              htmlFor="isPublic"
+              className="text-sm font-medium text-gray-300"
+            >
+              Make this workout public (others can view and clone)
+            </label>
           </div>
 
           <div>

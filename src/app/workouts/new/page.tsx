@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createWorkout, WorkoutFormData } from '@/lib/workout/store'
+import { useWorkoutStore, WorkoutFormData } from '@/lib/workout/store'
 
 interface ExerciseField {
   name: string
@@ -16,6 +16,8 @@ export default function NewWorkoutPage() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [tags, setTags] = useState('')
+  const [isPublic, setIsPublic] = useState(false)
   const [exercises, setExercises] = useState<ExerciseField[]>([
     {
       name: '',
@@ -26,6 +28,8 @@ export default function NewWorkoutPage() {
     },
   ])
   const [saving, setSaving] = useState(false)
+
+  const { createWorkout } = useWorkoutStore()
 
   const addExercise = () => {
     setExercises([
@@ -63,6 +67,8 @@ export default function NewWorkoutPage() {
     const data: WorkoutFormData = {
       name: name.trim(),
       description: description.trim() || undefined,
+      tags: tags.trim() || undefined,
+      isPublic,
       exercises: exercises
         .filter((ex) => ex.name.trim())
         .map((ex) => ({
@@ -74,7 +80,7 @@ export default function NewWorkoutPage() {
         })),
     }
 
-    createWorkout(data)
+    await createWorkout(data)
     router.push('/')
   }
 
@@ -114,6 +120,35 @@ export default function NewWorkoutPage() {
               rows={2}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Tags (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="e.g., HIIT, Strength, Cardio"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="isPublic"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="w-4 h-4 rounded bg-gray-800 border-gray-700"
+            />
+            <label
+              htmlFor="isPublic"
+              className="text-sm font-medium text-gray-300"
+            >
+              Make this workout public (others can view and clone)
+            </label>
           </div>
 
           <div>

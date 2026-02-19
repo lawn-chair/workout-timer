@@ -12,6 +12,9 @@ export interface Workout {
   id: string
   name: string
   description?: string
+  slug?: string
+  tags?: string
+  isPublic?: boolean
   exercises: Exercise[]
   createdAt: Date
   updatedAt: Date
@@ -20,6 +23,8 @@ export interface Workout {
 export interface WorkoutFormData {
   name: string
   description?: string
+  isPublic?: boolean
+  tags?: string
   exercises: {
     name: string
     workDuration: number
