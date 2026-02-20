@@ -63,7 +63,7 @@ E2E_TESTING=false
 Migrations are applied automatically during deploy via:
 
 ```bash
-npx prisma migrate deploy
+node ./scripts/apply-turso-migrations.mjs
 ```
 
 This runs before `next build` (see `package.json` build script).
