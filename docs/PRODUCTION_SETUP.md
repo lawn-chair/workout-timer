@@ -24,8 +24,8 @@ This guide documents the initial production setup for `timer.bpr.rocks`.
 ## 2) Turso Database
 
 1. Create a new Turso database for production.
-2. Copy the connection URL.
-3. This URL will be used as `DATABASE_URL` in Vercel.
+2. Copy the connection URL and auth token.
+3. These values will be used as `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in Vercel.
 
 ## 3) Generate NEXTAUTH_SECRET
 
@@ -41,7 +41,8 @@ openssl rand -base64 32
 2. Set **Production** environment variables:
 
 ```bash
-DATABASE_URL=...        # Turso URL
+TURSO_DATABASE_URL=...  # Turso URL
+TURSO_AUTH_TOKEN=...    # Turso auth token
 NEXTAUTH_URL=https://timer.bpr.rocks
 NEXTAUTH_SECRET=...     # generated secret
 GOOGLE_CLIENT_ID=...
@@ -62,7 +63,7 @@ E2E_TESTING=false
 Migrations are applied automatically during deploy via:
 
 ```bash
-npx prisma migrate deploy
+node ./scripts/apply-turso-migrations.mjs
 ```
 
 This runs before `next build` (see `package.json` build script).

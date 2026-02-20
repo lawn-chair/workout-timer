@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-  const explicitUrl = process.env.DATABASE_URL
+  const explicitUrl = process.env.TURSO_DATABASE_URL ?? process.env.DATABASE_URL
   const isTestEnv =
     process.env.NODE_ENV === 'test' || process.env.VITEST === 'true'
   const isE2E = process.env.E2E_TESTING === 'true'
@@ -17,6 +17,7 @@ function createPrismaClient() {
 
   const adapter = new PrismaLibSql({
     url,
+    authToken: process.env.TURSO_AUTH_TOKEN,
   })
   return new PrismaClient({ adapter })
 }
