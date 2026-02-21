@@ -13,11 +13,38 @@ class AudioManager {
     this.enabled = enabled
   }
 
+  unlock() {
+    if (!this.enabled) return
+
+    try {
+      const ctx = this.getContext()
+      if (ctx.state === 'suspended') {
+        void ctx.resume()
+      }
+
+      const oscillator = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      oscillator.connect(gain)
+      gain.connect(ctx.destination)
+
+      gain.gain.setValueAtTime(0, ctx.currentTime)
+      oscillator.start(ctx.currentTime)
+      oscillator.stop(ctx.currentTime + 0.01)
+    } catch (e) {
+      console.warn('Audio not available:', e)
+    }
+  }
+
   playBeep(frequency = 800, duration = 0.1) {
     if (!this.enabled) return
 
     try {
       const ctx = this.getContext()
+      if (ctx.state === 'suspended') {
+        void ctx.resume()
+        return
+      }
       const oscillator = ctx.createOscillator()
       const gain = ctx.createGain()
 

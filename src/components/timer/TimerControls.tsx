@@ -1,7 +1,13 @@
 import { useTimerStore } from '@/lib/timer/store'
+import { audioManager } from '@/lib/timer/audio'
 
 export default function TimerControls() {
   const { phase, isRunning, start, pause, resume, skip, stop } = useTimerStore()
+
+  const handleStart = () => {
+    audioManager.unlock()
+    start()
+  }
 
   if (phase === 'complete') return null
 
@@ -10,7 +16,7 @@ export default function TimerControls() {
       <div className="flex items-center justify-center gap-4">
         {phase === 'idle' ? (
           <button
-            onClick={start}
+            onClick={handleStart}
             className="lime-button w-40 h-16 rounded-full text-sm uppercase tracking-[0.2em]"
             data-testid="timer-start-button"
           >

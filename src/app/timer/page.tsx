@@ -7,15 +7,19 @@ import TimerControls from '@/components/timer/TimerControls'
 import { useTimerStore } from '@/lib/timer/store'
 import { useTimer } from '@/lib/timer/useTimer'
 import { useTimerAudio } from '@/lib/timer/useTimerAudio'
+import { useWakeLock } from '@/lib/timer/useWakeLock'
 import AppShell from '@/components/ui/AppShell'
 import StatePanel from '@/components/ui/StatePanel'
 
 export default function TimerPage() {
   const router = useRouter()
-  const { phase, workout } = useTimerStore()
+  const { phase, workout, isRunning } = useTimerStore()
 
   useTimer()
   useTimerAudio()
+  const { isSupported: wakeLockSupported } = useWakeLock(
+    isRunning && phase !== 'idle' && phase !== 'complete'
+  )
 
   useEffect(() => {
     if (!workout) {
@@ -67,7 +71,7 @@ export default function TimerPage() {
 
   return (
     <AppShell>
-      <TimerDisplay />
+      <TimerDisplay showWakeLockNotice={!wakeLockSupported} />
       <TimerControls />
     </AppShell>
   )
