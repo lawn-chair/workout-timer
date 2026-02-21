@@ -67,7 +67,13 @@ function getNextUpLabel(
   return 'Next: --'
 }
 
-export default function TimerDisplay() {
+interface TimerDisplayProps {
+  showWakeLockNotice: boolean
+}
+
+export default function TimerDisplay({
+  showWakeLockNotice,
+}: TimerDisplayProps) {
   const {
     phase,
     timeRemaining,
@@ -154,6 +160,11 @@ export default function TimerDisplay() {
             <p className="text-sm text-white/70 mt-4">
               Stay focused. The next cue is coming.
             </p>
+            {showWakeLockNotice && (
+              <p className="text-xs text-white/60 mt-3">
+                Keep screen awake isn&apos;t supported on this device.
+              </p>
+            )}
           </>
         )}
       </div>

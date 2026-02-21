@@ -61,4 +61,40 @@ describe('audioManager', () => {
       expect(playBeepSpy).toHaveBeenCalledWith(1200, 0.4)
     })
   })
+
+  describe('unlock', () => {
+    it('should resume audio context when suspended', () => {
+      const resume = vi.fn().mockResolvedValue(undefined)
+      const createOscillator = vi.fn(() => ({
+        connect: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn(),
+      }))
+      const createGain = vi.fn(() => ({
+        connect: vi.fn(),
+        gain: {
+          setValueAtTime: vi.fn(),
+        },
+      }))
+
+      class AudioContextMock {
+        state = 'suspended'
+        resume = resume
+        createOscillator = createOscillator
+        createGain = createGain
+        destination = {}
+        currentTime = 0
+      }
+
+      const originalAudioContext = globalThis.AudioContext
+      globalThis.AudioContext =
+        AudioContextMock as unknown as typeof AudioContext
+
+      audioManager.unlock()
+
+      expect(resume).toHaveBeenCalled()
+
+      globalThis.AudioContext = originalAudioContext
+    })
+  })
 })
