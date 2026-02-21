@@ -56,7 +56,10 @@ export function getTotalWorkoutTime(workout: Workout): number {
     const restBetweenExercisesTime =
       set.restBetweenExercises * Math.max(set.exercises.length - 1, 0)
     const setTime = exerciseWork + restBetweenExercisesTime
-    const repeatedTime = setTime * Math.max(set.repeatCount, 1)
+    const repeatCount = Math.max(set.repeatCount, 1)
+    const restBetweenRepeatsTime =
+      Math.max(repeatCount - 1, 0) * set.restBetweenExercises
+    const repeatedTime = setTime * repeatCount + restBetweenRepeatsTime
     const restBetweenSetsTime =
       setIndex < workout.sets.length - 1 ? set.restBetweenSets : 0
     return total + repeatedTime + restBetweenSetsTime

@@ -22,6 +22,11 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
+    env: {
+      ...process.env,
+      DATABASE_URL: 'file:./e2e.db',
+      E2E_TESTING: 'true',
+    },
   },
 })

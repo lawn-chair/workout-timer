@@ -50,7 +50,7 @@ describe('getTotalWorkoutTime', () => {
         exercises: [{ workDuration: 20 }, { workDuration: 30 }],
       },
     ])
-    expect(getTotalWorkoutTime(workout)).toBe(120)
+    expect(getTotalWorkoutTime(workout)).toBe(130)
   })
 
   it('should include rest between sets', () => {
@@ -86,7 +86,7 @@ describe('getTotalWorkoutTime', () => {
         exercises: [{ workDuration: 40 }],
       },
     ])
-    expect(getTotalWorkoutTime(workout)).toBe(155)
+    expect(getTotalWorkoutTime(workout)).toBe(165)
   })
 
   it('should return 0 for empty workout', () => {

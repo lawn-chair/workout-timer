@@ -236,6 +236,27 @@ describe('useTimerStore', () => {
       expect(useTimerStore.getState().phase).toBe('rest')
     })
 
+    it('should rest between repeats when rest is configured', () => {
+      const workout = createWorkout([
+        {
+          repeatCount: 2,
+          restBetweenExercises: 3,
+          restBetweenSets: 0,
+          exercises: [{ name: 'Push-ups', workDuration: 1 }],
+        },
+      ])
+      useTimerStore.getState().loadWorkout(workout)
+      useTimerStore.getState().start()
+
+      tickUntil('work')
+      expect(useTimerStore.getState().phase).toBe('work')
+
+      tickUntil('rest')
+      const state = useTimerStore.getState()
+      expect(state.phase).toBe('rest')
+      expect(state.timeRemaining).toBe(3)
+    })
+
     it('should increment total time elapsed', () => {
       const workout = createWorkout([
         {
@@ -281,6 +302,29 @@ describe('useTimerStore', () => {
       const state = useTimerStore.getState()
       expect(state.phase).toBe('work')
       expect(state.currentExerciseIndex).toBe(1)
+    })
+
+    it('should transition from rest to work for next repeat', () => {
+      const workout = createWorkout([
+        {
+          repeatCount: 2,
+          restBetweenExercises: 1,
+          restBetweenSets: 0,
+          exercises: [{ name: 'Push-ups', workDuration: 1 }],
+        },
+      ])
+      useTimerStore.getState().loadWorkout(workout)
+      useTimerStore.getState().start()
+
+      tickUntil('rest')
+      expect(useTimerStore.getState().phase).toBe('rest')
+      expect(useTimerStore.getState().currentRepeat).toBe(1)
+
+      tickUntil('work')
+      const state = useTimerStore.getState()
+      expect(state.phase).toBe('work')
+      expect(state.currentRepeat).toBe(2)
+      expect(state.currentExerciseIndex).toBe(0)
     })
 
     it('should transition from rest between sets to next set', () => {
@@ -500,6 +544,28 @@ describe('useTimerStore', () => {
 
       useTimerStore.getState().tick()
       expect(useTimerStore.getState().currentExerciseIndex).toBe(1)
+    })
+
+    it('should skip rest between repeats when rest is zero', () => {
+      const workout = createWorkout([
+        {
+          repeatCount: 2,
+          restBetweenExercises: 0,
+          restBetweenSets: 0,
+          exercises: [{ name: 'Push-ups', workDuration: 1 }],
+        },
+      ])
+      useTimerStore.getState().loadWorkout(workout)
+      useTimerStore.getState().start()
+
+      tickUntil('work')
+      expect(useTimerStore.getState().currentRepeat).toBe(1)
+
+      useTimerStore.getState().tick()
+      const state = useTimerStore.getState()
+      expect(state.phase).toBe('work')
+      expect(state.currentRepeat).toBe(2)
+      expect(state.currentExerciseIndex).toBe(0)
     })
 
     it('should complete single exercise single set workout', () => {
