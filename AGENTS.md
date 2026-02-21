@@ -28,6 +28,7 @@ npm run check        # lint + typecheck + tests
 ## Workflow Defaults
 
 - Always write a plan to a descriptive `/docs/*.md` file before implementation.
+- Review `docs/dev-checklist.md` before starting any new work.
 - Always create a new branch for work.
 - Auto-commit after each task, including both feature and tests when practical.
 - Run `npm run check` before opening a PR, and only open the PR after tests pass.
