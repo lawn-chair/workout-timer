@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Bebas_Neue, Manrope, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
+import { Analytics } from '@vercel/analytics/next'
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${bodyFont.variable} ${displayFont.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
+        <Analytics />
       </body>
     </html>
   )
