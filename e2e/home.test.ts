@@ -1,16 +1,23 @@
 import { test, expect, Page } from '@playwright/test'
 
+let nameCounter = 0
+function uniqueName(base: string): string {
+  nameCounter++
+  return `${base} ${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nameCounter}`
+}
+
 async function createWorkout(page: Page, name: string) {
   await page.goto('/workouts/new')
   await page.getByTestId('workout-name-input').fill(name)
   await page.getByTestId('exercise-name-input-0-0').fill('Test Exercise')
   await page.getByTestId('create-workout-button').click()
   await expect(page).toHaveURL('/')
+  await expect(page.getByRole('heading', { name })).toBeVisible()
 }
 
 test.describe('Home page', () => {
   test('shows workout list with created workouts', async ({ page }) => {
-    await createWorkout(page, 'Sample Workout')
+    await createWorkout(page, uniqueName('Sample Workout'))
     await expect(page.getByTestId('new-workout-button')).toBeVisible()
     const workoutCards = await page
       .locator('[data-testid^="workout-card-"]')
@@ -33,39 +40,47 @@ test.describe('Home page', () => {
   })
 
   test('navigates to edit workout page', async ({ page }) => {
-    await createWorkout(page, 'Workout to Edit from Home')
-    const editButton = page.getByTestId(/edit-workout-/)
-    await editButton.first().click()
-    await expect(page).toHaveURL(/\/workouts\/.+\/edit/)
-    await expect(page.getByTestId('workout-name-input')).toBeVisible()
+    const name = uniqueName('Workout to Edit from Home')
+    await createWorkout(page, name)
+    const card = page.locator('[data-testid^="workout-card-"]', {
+      hasText: name,
+    })
+    const editButton = card.getByTestId(/edit-workout-/)
+    await Promise.all([
+      page.waitForURL(/\/workouts\/.+\/edit/),
+      editButton.click(),
+    ])
+    await expect(page.getByTestId('workout-name-input')).toBeVisible({
+      timeout: 10000,
+    })
   })
 
   test('starts workout and navigates to timer', async ({ page }) => {
-    await createWorkout(page, 'Workout to Start')
-    const startButton = page.getByTestId(/start-workout-/)
-    await startButton.first().click()
+    const name = uniqueName('Workout to Start')
+    await createWorkout(page, name)
+    const card = page.locator('[data-testid^="workout-card-"]', {
+      hasText: name,
+    })
+    await card.getByTestId(/start-workout-/).click()
     await expect(page).toHaveURL('/timer')
     await expect(page.getByTestId('timer-display')).toBeVisible()
   })
 
   test('deletes workout with confirmation', async ({ page }) => {
-    await createWorkout(page, 'Workout to Delete')
+    const name = uniqueName('Workout to Delete')
+    await createWorkout(page, name)
     page.on('dialog', (dialog) => dialog.accept())
 
     // Wait for the created workout to appear on the page
-    await expect(
-      page.getByRole('heading', { name: 'Workout to Delete' }).first()
-    ).toBeVisible()
+    const heading = page.getByRole('heading', { name }).first()
+    await expect(heading).toBeVisible()
+    const card = page.locator('[data-testid^="workout-card-"]', {
+      has: heading,
+    })
 
-    const deleteButton = page.getByTestId(/delete-workout-/)
-    const initialCount = await deleteButton.count()
-    expect(initialCount).toBeGreaterThan(0)
+    await card.getByTestId(/delete-workout-/).click()
 
-    await deleteButton.first().click()
-
-    await expect(
-      page.getByRole('heading', { name: 'Workout to Delete' }).first()
-    ).not.toBeVisible({
+    await expect(page.getByRole('heading', { name }).first()).not.toBeVisible({
       timeout: 10000,
     })
   })
