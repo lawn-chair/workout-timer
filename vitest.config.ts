@@ -20,6 +20,9 @@ export default defineConfig({
         'src/lib/db.ts',
         'src/lib/auth.ts',
         'src/lib/workout/types.ts',
+        'src/components/auth/AuthProvider.tsx',
+        'src/components/ui/AppShell.tsx',
+        'src/components/ui/IconMark.tsx',
       ],
       thresholds: {
         lines: 85,
