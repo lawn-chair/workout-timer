@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { fetchUserSettings, updateUserSettings } from '@/lib/workout/api'
@@ -112,7 +113,25 @@ export default function SettingsPage() {
             <div className="glass-panel rounded-2xl p-5 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Name</span>
-                <span>{session?.user?.name || 'N/A'}</span>
+                <span className="flex items-center gap-2">
+                  {session?.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt="User avatar"
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-full object-cover border border-white/10"
+                    />
+                  ) : (
+                    <span
+                      className="h-6 w-6 rounded-full bg-white/10 text-[0.55rem] uppercase tracking-wide text-white/70 flex items-center justify-center"
+                      aria-label="User avatar"
+                    >
+                      {(session?.user?.name || 'User').slice(0, 2)}
+                    </span>
+                  )}
+                  <span>{session?.user?.name || 'N/A'}</span>
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Email</span>

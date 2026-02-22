@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useWorkoutStore, Workout } from '@/lib/workout/store'
@@ -139,9 +140,27 @@ export default function Home() {
 
             <div className="flex flex-wrap items-center gap-2">
               {session?.user && (
-                <span className="text-sm text-gray-400">
-                  {session.user.name}
-                </span>
+                <div className="flex items-center gap-2">
+                  {session.user.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt="User avatar"
+                      width={28}
+                      height={28}
+                      className="h-7 w-7 rounded-full object-cover border border-white/10"
+                    />
+                  ) : (
+                    <div
+                      className="h-7 w-7 rounded-full bg-white/10 text-[0.6rem] uppercase tracking-wide text-white/70 flex items-center justify-center"
+                      aria-label="User avatar"
+                    >
+                      {(session.user.name || 'User').slice(0, 2)}
+                    </div>
+                  )}
+                  <span className="text-sm text-gray-400">
+                    {session.user.name}
+                  </span>
+                </div>
               )}
               <button
                 onClick={() => setShowPublic(!showPublic)}
