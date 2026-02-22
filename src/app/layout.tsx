@@ -26,7 +26,6 @@ export const metadata: Metadata = {
   title: 'Workout Timer',
   description: 'Build interval workouts and run a guided timer experience.',
   manifest: '/manifest.webmanifest',
-  themeColor: '#0c0f12',
   icons: {
     icon: [
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -34,6 +33,10 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: '/icons/icon-180.png', sizes: '180x180' }],
   },
+}
+
+export const viewport = {
+  themeColor: '#0c0f12',
 }
 
 export default function RootLayout({
