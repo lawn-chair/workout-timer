@@ -13,12 +13,14 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "db:validate": "prisma validate",
+    "audit": "node -e \"const {execSync}=require('node:child_process'); const out=execSync('npm audit --omit=dev --audit-level=high --json',{encoding:'utf8'}); const data=JSON.parse(out); const adv=data.vulnerabilities||{}; const high=Object.values(adv).filter(v=>v.severity==='high').length; const critical=Object.values(adv).filter(v=>v.severity==='critical').length; if(high||critical){console.error('High/critical vulnerabilities found:', {high, critical}); process.exit(1);} console.log('No high/critical vulnerabilities.');\"",
     "test:run": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test node -r dotenv/config ./node_modules/.bin/vitest run",
     "test:e2e": "DOTENV_CONFIG_PATH=.env.e2e node -r dotenv/config ./node_modules/.bin/playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm run test:run && npm run test:e2e",
+    "check": "npm run lint && npm run typecheck && npm run db:validate && npm run test:run && npm run test:e2e && npm run test:coverage && npm run audit",
     "prepare": "husky"
   },
   "dependencies": {
@@ -42,6 +44,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/coverage-v8": "^4.0.18",
     "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { useTimer } from './useTimer'
 import { useTimerStore } from './store'
 import { Workout } from './types'
@@ -115,7 +115,9 @@ describe('useTimer', () => {
 
     render(<TestComponent />)
 
-    vi.advanceTimersByTime(1000)
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
 
     const state = useTimerStore.getState()
     expect(state.timeRemaining).toBe(29)
@@ -197,9 +199,13 @@ describe('useTimer', () => {
     render(<TestComponent />)
 
     const timeBefore = screen.getByTestId('time').textContent
-    useTimerStore.getState().pause()
+    act(() => {
+      useTimerStore.getState().pause()
+    })
 
-    vi.advanceTimersByTime(3000)
+    act(() => {
+      vi.advanceTimersByTime(3000)
+    })
 
     expect(screen.getByTestId('time').textContent).toBe(timeBefore)
   })

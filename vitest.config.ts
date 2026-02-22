@@ -12,7 +12,21 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'json', 'html'],
       include: ['src/**/*.{js,ts,jsx,tsx}'],
-      exclude: ['src/test/**/*', 'src/app/**/*'],
+      exclude: [
+        'src/test/**/*',
+        'src/app/**/*',
+        'src/generated/**/*',
+        'src/types/**/*',
+        'src/lib/db.ts',
+        'src/lib/auth.ts',
+        'src/lib/workout/types.ts',
+      ],
+      thresholds: {
+        lines: 85,
+        functions: 85,
+        branches: 82,
+        statements: 85,
+      },
     },
   },
   resolve: {

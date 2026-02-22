@@ -6,7 +6,8 @@ export default function IconMark({ className }: IconMarkProps) {
   return (
     <svg
       viewBox="0 0 64 64"
-      aria-hidden="true"
+      role="img"
+      aria-label="App mark"
       className={className}
       fill="none"
     >
