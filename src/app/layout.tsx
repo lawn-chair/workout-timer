@@ -3,6 +3,7 @@ import { Bebas_Neue, Manrope, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { Analytics } from '@vercel/analytics/next'
+import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister'
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
@@ -24,6 +25,15 @@ const bodyFont = Manrope({
 export const metadata: Metadata = {
   title: 'Workout Timer',
   description: 'Build interval workouts and run a guided timer experience.',
+  manifest: '/manifest.webmanifest',
+  themeColor: '#0c0f12',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icons/icon-180.png', sizes: '180x180' }],
+  },
 }
 
 export default function RootLayout({
@@ -38,6 +48,7 @@ export default function RootLayout({
       >
         <AuthProvider>{children}</AuthProvider>
         <Analytics />
+        <ServiceWorkerRegister />
       </body>
     </html>
   )

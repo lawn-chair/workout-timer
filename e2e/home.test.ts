@@ -35,9 +35,13 @@ test.describe('Home page', () => {
   test('navigates to edit workout page', async ({ page }) => {
     await createWorkout(page, 'Workout to Edit from Home')
     const editButton = page.getByTestId(/edit-workout-/)
-    await editButton.first().click()
-    await expect(page).toHaveURL(/\/workouts\/.+\/edit/)
-    await expect(page.getByTestId('workout-name-input')).toBeVisible()
+    await Promise.all([
+      page.waitForURL(/\/workouts\/.+\/edit/),
+      editButton.first().click(),
+    ])
+    await expect(page.getByTestId('workout-name-input')).toBeVisible({
+      timeout: 10000,
+    })
   })
 
   test('starts workout and navigates to timer', async ({ page }) => {

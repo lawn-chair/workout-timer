@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Workout Timer icon">
+  <defs>
+    <linearGradient id="bolt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a6ff3b"/>
+      <stop offset="1" stop-color="#3de7ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#0c0f12"/>
+  <circle cx="256" cy="276" r="150" fill="none" stroke="#eef2f6" stroke-width="22"/>
+  <path d="M224 116h64l18 52h-100l18-52z" fill="#eef2f6"/>
+  <rect x="204" y="84" width="104" height="36" rx="14" fill="#eef2f6"/>
+  <path d="M274 176l-78 132h74l-24 84 100-156h-66l18-60z" fill="url(#bolt)"/>
+  <path d="M256 176v-42" stroke="#eef2f6" stroke-width="18" stroke-linecap="round"/>
+</svg>

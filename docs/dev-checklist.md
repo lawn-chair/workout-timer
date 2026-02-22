@@ -5,6 +5,7 @@
 - Read `AGENTS.md`.
 - `git fetch origin` and create a new branch from `origin/main`.
 - Confirm branch and tracking with `git status -sb` and `git branch -vv`.
+- Do not reuse an existing branch for a new feature or fix. Always create a fresh branch per task.
 - Write a plan to a descriptive `docs/*.md` file.
 
 ## While you work
