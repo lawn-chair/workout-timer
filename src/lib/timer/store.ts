@@ -105,14 +105,24 @@ function getNextPhase(
           time: set.restBetweenSets,
         }
       }
+      if (set.restBetweenExercises > 0) {
+        return {
+          phase: 'rest',
+          setIndex,
+          exerciseIndex,
+          repeat: currentRepeat,
+          time: set.restBetweenExercises,
+        }
+      }
       const nextSet = workout.sets[setIndex + 1]
-      const nextExercise = nextSet.exercises[0]
+      if (!nextSet) return null
+      const nextSetExercise = nextSet.exercises[0]
       return {
         phase: 'work',
         setIndex: setIndex + 1,
         exerciseIndex: 0,
         repeat: 1,
-        time: nextExercise.workDuration,
+        time: nextSetExercise.workDuration,
       }
     }
 
@@ -146,7 +156,16 @@ function getNextPhase(
         time: firstExercise.workDuration,
       }
     }
-    return null
+    const nextSet = workout.sets[setIndex + 1]
+    if (!nextSet) return null
+    const nextSetExercise = nextSet.exercises[0]
+    return {
+      phase: 'work',
+      setIndex: setIndex + 1,
+      exerciseIndex: 0,
+      repeat: 1,
+      time: nextSetExercise.workDuration,
+    }
   }
 
   if (currentPhase === 'restBetweenSets') {
