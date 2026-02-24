@@ -356,6 +356,39 @@ describe('useTimerStore', () => {
       expect(useTimerStore.getState().phase).toBe('work')
       expect(useTimerStore.getState().currentSetIndex).toBe(1)
     })
+
+    it('should rest after last exercise when next set exists and rest between sets is zero', () => {
+      const workout = createWorkout([
+        {
+          repeatCount: 1,
+          restBetweenExercises: 4,
+          restBetweenSets: 0,
+          exercises: [{ name: 'Push-ups', workDuration: 1 }],
+        },
+        {
+          repeatCount: 1,
+          restBetweenExercises: 0,
+          restBetweenSets: 0,
+          exercises: [{ name: 'Squats', workDuration: 1 }],
+        },
+      ])
+      useTimerStore.getState().loadWorkout(workout)
+      useTimerStore.getState().start()
+
+      tickUntil('work')
+      expect(useTimerStore.getState().phase).toBe('work')
+
+      tickUntil('rest')
+      const restState = useTimerStore.getState()
+      expect(restState.phase).toBe('rest')
+      expect(restState.timeRemaining).toBe(4)
+
+      tickUntil('work')
+      const state = useTimerStore.getState()
+      expect(state.phase).toBe('work')
+      expect(state.currentSetIndex).toBe(1)
+      expect(state.currentExerciseIndex).toBe(0)
+    })
   })
 
   describe('tick - restBetweenSets', () => {
