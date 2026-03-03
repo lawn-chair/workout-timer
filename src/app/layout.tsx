@@ -26,7 +26,7 @@ const bodyFont = Manrope({
 export const metadata: Metadata = {
   title: 'Workout Timer',
   description: 'Build interval workouts and run a guided timer experience.',
-  manifest: '/manifest.webmanifest',
+  manifest: '/manifest',
   icons: {
     icon: [
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
