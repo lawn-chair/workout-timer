@@ -12,6 +12,7 @@ Workout Timer is a Next.js app for building interval workouts and running them i
 - **Workout Structure**:
   - Sets define repeat count, rest between exercises, and rest between sets
   - Exercises define name and work duration (seconds)
+- **Drag-and-Drop Builder**: Reorder sets and exercises visually within sets
 - **Delete Workouts**
 - **Clone Public Workouts** into a user account
 - **Browse Public Workouts** and deep-link via slug
@@ -19,20 +20,27 @@ Workout Timer is a Next.js app for building interval workouts and running them i
 ### 2. Timer Interface
 
 - **Large Display**: Current exercise, phase label, time remaining
-- **Phases**: Countdown, work, rest, rest between sets, complete
+- **Phases**: Countdown, work, rest, rest between repeats, rest between sets, complete
 - **Controls**: Start, Pause/Resume, Skip, Stop
 - **Audio Cues**:
   - 3-2-1 countdown beeps
   - Work start chime
-  - Rest start chime (including between sets)
+  - Rest start chime (including between sets and between repeats)
   - Workout complete chime
 - **Progress**: Set #, repeat #, exercise #, total time elapsed
+- **Screen Wake Lock**: Keeps screen on during active workout
 
 ### 3. Accounts & Settings
 
 - **Auth**: NextAuth with Google OAuth in production
 - **Dev Auth**: Credentials provider for development and testing
 - **Settings**: Audio preferences (countdown, work/rest start, completion)
+
+### 4. PWA Support
+
+- **Installable**: Web app manifest for installation
+- **Icons**: Multiple sizes for different devices
+- **Theme**: Consistent dark theme colors
 
 ---
 
@@ -117,24 +125,27 @@ Workout Timer is a Next.js app for building interval workouts and running them i
 2. Timer screen loads and waits in `idle`
 3. Start triggers a 3-second countdown
 4. For each set:
-   - Work phase for each exercise
-   - Rest phase between exercises (if configured)
-   - Repeat exercises for `repeatCount`
-5. Rest between sets (if configured)
-6. Final completion screen with action to return home
+   - For each repeat of the set:
+     - Work phase for each exercise
+     - Rest phase between exercises (if configured)
+     - Rest phase between repeats (if configured, uses restBetweenExercises)
+   - Rest between sets (if configured)
+   - If no rest between sets but rest between exercises configured, apply restBetweenExercises before next set
+5. Final completion screen with action to return home
 
 ---
 
 ## UI States (Current)
 
-| State             | Background | Sound            |
-| ----------------- | ---------- | ---------------- |
-| Countdown         | Yellow     | Countdown beeps  |
-| Work              | Green      | Work start chime |
-| Rest              | Red        | Rest start chime |
-| Rest Between Sets | Orange     | Rest start chime |
-| Complete          | Blue       | Completion chime |
-| Idle              | Dark gray  | -                |
+| State                | Background | Sound            |
+| -------------------- | ---------- | ---------------- |
+| Countdown            | Yellow     | Countdown beeps  |
+| Work                 | Green      | Work start chime |
+| Rest                 | Red        | Rest start chime |
+| Rest Between Sets    | Orange     | Rest start chime |
+| Rest Between Repeats | Orange     | Rest start chime |
+| Complete             | Blue       | Completion chime |
+| Idle                 | Dark gray  | -                |
 
 ---
 
@@ -153,9 +164,7 @@ Workout Timer is a Next.js app for building interval workouts and running them i
 
 ## Future Ideas / Roadmap
 
-- **PWA**: Installable app with offline support
 - **Workout History**: Completed session history and analytics
-- **Drag-and-Drop Builder**: Reorder sets/exercises visually
 - **Workout Templates**: Pre-built routines and sharing
 - **Voice Announcements**: Spoken phase cues
 - **Custom Media**: Exercise images or icons
