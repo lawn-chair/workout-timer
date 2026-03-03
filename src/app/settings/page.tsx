@@ -9,12 +9,19 @@ import { fetchUserSettings, updateUserSettings } from '@/lib/workout/api'
 import AppShell from '@/components/ui/AppShell'
 import IconMark from '@/components/ui/IconMark'
 import StatePanel from '@/components/ui/StatePanel'
+import {
+  useTheme,
+  type ThemeMode,
+  type AccessibilityPreset,
+} from '@/components/ui/ThemeProvider'
 
 interface UserSettings {
   countdownBeeps: boolean
   workStartSound: boolean
   restStartSound: boolean
   completionChime: boolean
+  theme?: ThemeMode
+  accessibility?: AccessibilityPreset
 }
 
 const defaultSettings: UserSettings = {
@@ -22,11 +29,22 @@ const defaultSettings: UserSettings = {
   workStartSound: true,
   restStartSound: true,
   completionChime: true,
+  theme: 'system',
+  accessibility: 'default',
 }
 
 export default function SettingsPage() {
+  return (
+    <AppShell>
+      <SettingsContent />
+    </AppShell>
+  )
+}
+
+function SettingsContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { theme, accessibility, setTheme, setAccessibility } = useTheme()
   const [settings, setSettings] = useState<UserSettings>(defaultSettings)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -40,21 +58,30 @@ export default function SettingsPage() {
     if (status === 'authenticated') {
       fetchUserSettings()
         .then((data) => {
+          const fetched = data as Partial<UserSettings>
           setSettings({
             ...defaultSettings,
-            ...(data as Partial<UserSettings>),
+            ...fetched,
+            theme: fetched.theme || theme,
+            accessibility: fetched.accessibility || accessibility,
           })
           setLoading(false)
         })
         .catch(() => setLoading(false))
     }
-  }, [status, router])
+  }, [status, router, theme, accessibility])
 
   const handleSave = async () => {
     setSaving(true)
     setSaved(false)
     try {
       await updateUserSettings(settings as unknown as Record<string, unknown>)
+      if (settings.theme) {
+        setTheme(settings.theme)
+      }
+      if (settings.accessibility) {
+        setAccessibility(settings.accessibility)
+      }
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch {
@@ -184,6 +211,66 @@ export default function SettingsPage() {
                   </button>
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold mb-2">Appearance</h2>
+            <div className="glass-panel rounded-2xl p-5 space-y-4">
+              <div>
+                <p className="font-medium mb-2">Theme</p>
+                <div className="flex gap-2">
+                  {[
+                    { value: 'dark', label: 'Dark' },
+                    { value: 'light', label: 'Light' },
+                    { value: 'system', label: 'System' },
+                  ].map(({ value, label }) => (
+                    <button
+                      key={value}
+                      onClick={() =>
+                        setSettings((prev) => ({
+                          ...prev,
+                          theme: value as ThemeMode,
+                        }))
+                      }
+                      className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                        settings.theme === value
+                          ? 'bg-lime-400 text-black'
+                          : 'bg-white/10 hover:bg-white/20'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="font-medium mb-2">Accessibility</p>
+                <div className="flex gap-2 flex-wrap">
+                  {[
+                    { value: 'default', label: 'Default' },
+                    { value: 'high-contrast', label: 'High Contrast' },
+                    { value: 'large-text', label: 'Large Text' },
+                  ].map(({ value, label }) => (
+                    <button
+                      key={value}
+                      onClick={() =>
+                        setSettings((prev) => ({
+                          ...prev,
+                          accessibility: value as AccessibilityPreset,
+                        }))
+                      }
+                      className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                        settings.accessibility === value
+                          ? 'bg-lime-400 text-black'
+                          : 'bg-white/10 hover:bg-white/20'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
 

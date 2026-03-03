@@ -24,6 +24,48 @@
   --radius-sm: 10px;
 }
 
+[data-theme='light'] {
+  --background: #f0f2f5;
+  --foreground: #1a1f2e;
+  --surface: #ffffff;
+  --surface-2: #e8eaed;
+  --surface-3: #d1d5db;
+  --border: #c7ccd3;
+  --muted: #5a6170;
+  --muted-2: #7f8b9b;
+  --shadow-soft: 0 24px 60px -40px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 20px 50px -35px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme='light'] .app-shell {
+  background: linear-gradient(180deg, #f0f2f5 0%, #e5e8eb 40%, #eceef2 100%);
+}
+
+[data-theme='high-contrast'] {
+  --background: #000000;
+  --foreground: #ffffff;
+  --surface: #0a0a0a;
+  --surface-2: #1a1a1a;
+  --surface-3: #2a2a2a;
+  --border: #ffffff;
+  --muted: #cccccc;
+  --muted-2: #aaaaaa;
+  --lime: #00ff00;
+  --lime-600: #00cc00;
+  --work: #00ff00;
+  --rest: #ff0000;
+  --countdown: #ffff00;
+  --rest-sets: #ff8800;
+  --complete: #00ffff;
+}
+
+[data-theme='large-text'] {
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --font-size-base: 18px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -36,6 +78,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
+  font-size: var(--font-size-base, 16px);
 }
 
 * {
@@ -55,27 +98,37 @@ body {
 }
 
 .glass-panel {
-  background: rgba(17, 22, 28, 0.8);
+  background: rgba(var(--surface-rgb, 17, 22, 28), 0.8);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(14px);
 }
 
+[data-theme='light'] .glass-panel {
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .track-card {
   background: linear-gradient(
     180deg,
-    rgba(27, 36, 48, 0.95),
-    rgba(16, 21, 28, 0.98)
+    color-mix(in srgb, var(--surface-2) 95%, transparent),
+    color-mix(in srgb, var(--surface) 98%, transparent)
   );
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: var(--shadow-card);
+}
+
+[data-theme='light'] .track-card {
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .lime-button {
   background: var(--lime);
   color: #101316;
   font-weight: 700;
-  box-shadow: 0 12px 30px -18px rgba(166, 255, 59, 0.6);
+  box-shadow: 0 12px 30px -18px color-mix(in srgb, var(--lime) 60%, transparent);
   transition:
     transform 120ms ease,
     box-shadow 120ms ease,
@@ -88,27 +141,36 @@ body {
 }
 
 .ghost-button {
-  background: rgba(27, 36, 48, 0.8);
+  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--foreground);
 }
 
+[data-theme='light'] .ghost-button {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .chip {
-  background: rgba(27, 36, 48, 0.9);
-  border: 1px solid rgba(166, 255, 59, 0.35);
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lime) 35%, transparent);
   color: var(--foreground);
 }
 
 .input-field {
-  background: rgba(15, 20, 26, 0.9);
+  background: color-mix(in srgb, var(--background) 90%, transparent);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--foreground);
 }
 
+[data-theme='light'] .input-field {
+  background: var(--surface);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .input-field:focus {
   outline: none;
-  border-color: rgba(166, 255, 59, 0.65);
-  box-shadow: 0 0 0 3px rgba(166, 255, 59, 0.15);
+  border-color: color-mix(in srgb, var(--lime) 65%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lime) 15%, transparent);
 }
 
 .phase-band {

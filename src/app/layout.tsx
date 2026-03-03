@@ -4,6 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { Analytics } from '@vercel/analytics/next'
 import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister'
+import { ThemeProvider } from '@/components/ui/ThemeProvider'
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
@@ -45,11 +46,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${bodyFont.variable} ${displayFont.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
         <Analytics />
         <ServiceWorkerRegister />
       </body>
