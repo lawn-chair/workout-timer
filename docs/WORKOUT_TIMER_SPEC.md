@@ -42,6 +42,12 @@ Workout Timer is a Next.js app for building interval workouts and running them i
 - **Icons**: Multiple sizes for different devices
 - **Theme**: Consistent dark theme colors
 
+### 5. Theme & Accessibility
+
+- **Theme Modes**: Dark, Light, or System preference
+- **Accessibility Presets**: Default, High Contrast, Large Text
+- **Reduced Motion**: Respects `prefers-reduced-motion`
+
 ---
 
 ## Technical Stack
@@ -168,4 +174,3 @@ Workout Timer is a Next.js app for building interval workouts and running them i
 - **Workout Templates**: Pre-built routines and sharing
 - **Voice Announcements**: Spoken phase cues
 - **Custom Media**: Exercise images or icons
-- **Theme Support**: Light/dark themes and accessibility presets
