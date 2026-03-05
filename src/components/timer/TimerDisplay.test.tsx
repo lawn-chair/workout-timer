@@ -209,6 +209,7 @@ describe('TimerDisplay', () => {
 
     render(<TimerDisplay showWakeLockNotice={false} />)
 
+    expect(screen.getByText('Up Next: Workout Complete!')).toBeInTheDocument()
     expect(screen.getByText('Next: Exercise')).toBeInTheDocument()
   })
 
@@ -308,5 +309,71 @@ describe('TimerDisplay', () => {
     render(<TimerDisplay showWakeLockNotice={false} />)
 
     expect(screen.getByText('Next: Set 2')).toBeInTheDocument()
+  })
+
+  it('shows repeat message during rest when moving to next repeat', () => {
+    useTimerStore.setState({
+      phase: 'rest',
+      timeRemaining: 10,
+      totalTimeElapsed: 0,
+      currentSetIndex: 0,
+      currentExerciseIndex: 0,
+      currentRepeat: 1,
+      workout: {
+        id: 'workout-1',
+        name: 'Workout',
+        sets: [
+          {
+            id: 'set-1',
+            order: 0,
+            repeatCount: 2,
+            restBetweenExercises: 10,
+            restBetweenSets: 0,
+            exercises: [{ id: 'ex-1', name: 'Push-ups', workDuration: 30 }],
+          },
+        ],
+      },
+    })
+
+    render(<TimerDisplay showWakeLockNotice={false} />)
+
+    expect(screen.getByText('Up Next: Repeat set 2')).toBeInTheDocument()
+  })
+
+  it('shows next set first exercise during rest when moving to next set', () => {
+    useTimerStore.setState({
+      phase: 'rest',
+      timeRemaining: 10,
+      totalTimeElapsed: 0,
+      currentSetIndex: 0,
+      currentExerciseIndex: 0,
+      currentRepeat: 1,
+      workout: {
+        id: 'workout-1',
+        name: 'Workout',
+        sets: [
+          {
+            id: 'set-1',
+            order: 0,
+            repeatCount: 1,
+            restBetweenExercises: 10,
+            restBetweenSets: 0,
+            exercises: [{ id: 'ex-1', name: 'Push-ups', workDuration: 30 }],
+          },
+          {
+            id: 'set-2',
+            order: 1,
+            repeatCount: 1,
+            restBetweenExercises: 0,
+            restBetweenSets: 0,
+            exercises: [{ id: 'ex-2', name: 'Squats', workDuration: 30 }],
+          },
+        ],
+      },
+    })
+
+    render(<TimerDisplay showWakeLockNotice={false} />)
+
+    expect(screen.getByText('Up Next: Squats')).toBeInTheDocument()
   })
 })
