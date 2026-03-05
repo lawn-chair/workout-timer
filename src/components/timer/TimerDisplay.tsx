@@ -67,6 +67,112 @@ function getNextUpLabel(
   return 'Next: --'
 }
 
+interface DisplayedExercise {
+  name: string
+  isUpcoming: boolean
+  setLabel: string
+  repLabel: string
+  exerciseLabel: string
+}
+
+function getDisplayedExercise(
+  phase: TimerPhase,
+  workout: ReturnType<typeof useTimerStore.getState>['workout'],
+  currentSetIndex: number,
+  currentExerciseIndex: number,
+  currentRepeat: number
+): DisplayedExercise {
+  const defaultResult: DisplayedExercise = {
+    name: 'Exercise',
+    isUpcoming: false,
+    setLabel: '',
+    repLabel: '',
+    exerciseLabel: '',
+  }
+
+  if (!workout) return defaultResult
+
+  const currentSet = workout.sets[currentSetIndex]
+  if (!currentSet) return defaultResult
+
+  const currentExercise = currentSet.exercises[currentExerciseIndex]
+  const totalSets = workout.sets.length
+  const totalExercises = currentSet.exercises.length
+  const totalRepeats = currentSet.repeatCount
+
+  if (
+    phase === 'idle' ||
+    phase === 'countdown' ||
+    phase === 'work' ||
+    phase === 'complete'
+  ) {
+    return {
+      name: currentExercise?.name || 'Exercise',
+      isUpcoming: false,
+      setLabel: `Set ${currentSetIndex + 1} / ${totalSets}`,
+      repLabel: `Rep ${currentRepeat} / ${totalRepeats}`,
+      exerciseLabel: `Exercise ${currentExerciseIndex + 1} / ${totalExercises}`,
+    }
+  }
+
+  if (phase === 'rest') {
+    const nextExerciseInSet = currentSet.exercises[currentExerciseIndex + 1]
+    if (nextExerciseInSet) {
+      return {
+        name: nextExerciseInSet.name,
+        isUpcoming: true,
+        setLabel: `Set ${currentSetIndex + 1} / ${totalSets}`,
+        repLabel: `Rep ${currentRepeat} / ${totalRepeats}`,
+        exerciseLabel: `Exercise ${currentExerciseIndex + 2} / ${totalExercises}`,
+      }
+    }
+
+    if (currentRepeat < totalRepeats) {
+      return {
+        name: `Repeat set ${currentRepeat + 1}`,
+        isUpcoming: true,
+        setLabel: `Set ${currentSetIndex + 1} / ${totalSets}`,
+        repLabel: `Rep ${currentRepeat + 1} / ${totalRepeats}`,
+        exerciseLabel: `Exercise 1 / ${totalExercises}`,
+      }
+    }
+
+    if (currentSetIndex < totalSets - 1) {
+      const nextSet = workout.sets[currentSetIndex + 1]
+      const nextSetFirstExercise = nextSet?.exercises[0]
+      return {
+        name: nextSetFirstExercise?.name || 'Exercise',
+        isUpcoming: true,
+        setLabel: `Set ${currentSetIndex + 2} / ${totalSets}`,
+        repLabel: `Rep 1 / ${nextSet?.repeatCount || 1}`,
+        exerciseLabel: `Exercise 1 / ${nextSet?.exercises.length || 1}`,
+      }
+    }
+
+    return {
+      name: 'Workout Complete!',
+      isUpcoming: true,
+      setLabel: `Set ${currentSetIndex + 1} / ${totalSets}`,
+      repLabel: `Rep ${currentRepeat} / ${totalRepeats}`,
+      exerciseLabel: `Exercise ${currentExerciseIndex + 1} / ${totalExercises}`,
+    }
+  }
+
+  if (phase === 'restBetweenSets') {
+    const nextSet = workout.sets[currentSetIndex + 1]
+    const nextSetFirstExercise = nextSet?.exercises[0]
+    return {
+      name: nextSetFirstExercise?.name || 'Exercise',
+      isUpcoming: true,
+      setLabel: `Set ${currentSetIndex + 2} / ${totalSets}`,
+      repLabel: `Rep 1 / ${nextSet?.repeatCount || 1}`,
+      exerciseLabel: `Exercise 1 / ${nextSet?.exercises.length || 1}`,
+    }
+  }
+
+  return defaultResult
+}
+
 interface TimerDisplayProps {
   showWakeLockNotice: boolean
 }
@@ -85,12 +191,18 @@ export default function TimerDisplay({
   } = useTimerStore()
 
   const currentSet = workout?.sets[currentSetIndex]
-  const currentExercise = currentSet?.exercises[currentExerciseIndex]
   const totalTime = workout ? getTotalWorkoutTime(workout) : 0
   const progressPercent = totalTime
     ? Math.min((totalTimeElapsed / totalTime) * 100, 100)
     : 0
   const nextUpLabel = getNextUpLabel(
+    phase,
+    workout,
+    currentSetIndex,
+    currentExerciseIndex,
+    currentRepeat
+  )
+  const displayedExercise = getDisplayedExercise(
     phase,
     workout,
     currentSetIndex,
@@ -121,21 +233,26 @@ export default function TimerDisplay({
             </p>
 
             <p className="text-3xl md:text-4xl font-semibold mb-2">
-              {currentExercise?.name || 'Exercise'}
+              {displayedExercise.isUpcoming && phase !== 'restBetweenSets'
+                ? `Up Next: ${displayedExercise.name}`
+                : displayedExercise.name}
             </p>
 
-            {currentSet && currentExercise && (
+            {currentSet && (
               <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-white/70 mb-6">
                 <span className="px-3 py-1 rounded-full border border-white/20">
-                  Set {currentSetIndex + 1} / {workout?.sets.length || 0}
+                  {displayedExercise.setLabel}
                 </span>
-                <span className="px-3 py-1 rounded-full border border-white/20">
-                  Rep {currentRepeat} / {currentSet.repeatCount}
-                </span>
-                <span className="px-3 py-1 rounded-full border border-white/20">
-                  Exercise {currentExerciseIndex + 1} /{' '}
-                  {currentSet.exercises.length}
-                </span>
+                {displayedExercise.repLabel && (
+                  <span className="px-3 py-1 rounded-full border border-white/20">
+                    {displayedExercise.repLabel}
+                  </span>
+                )}
+                {displayedExercise.exerciseLabel && (
+                  <span className="px-3 py-1 rounded-full border border-white/20">
+                    {displayedExercise.exerciseLabel}
+                  </span>
+                )}
               </div>
             )}
 
