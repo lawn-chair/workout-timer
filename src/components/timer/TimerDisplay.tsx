@@ -47,8 +47,10 @@ function getNextUpLabel(
   if (phase === 'work') {
     const nextExercise = currentSet.exercises[currentExerciseIndex + 1]
     if (nextExercise) return `Next: ${nextExercise.name}`
-    if (currentRepeat < currentSet.repeatCount)
-      return `Next: Repeat set ${currentRepeat + 1}`
+    if (currentRepeat < currentSet.repeatCount) {
+      const firstExercise = currentSet.exercises[0]
+      return `Next: ${firstExercise?.name || 'Exercise'}`
+    }
     if (currentSetIndex < workout.sets.length - 1) {
       return `Next: Set ${currentSetIndex + 2}`
     }
@@ -117,6 +119,7 @@ function getDisplayedExercise(
 
   if (phase === 'rest') {
     const nextExerciseInSet = currentSet.exercises[currentExerciseIndex + 1]
+    const currentExercise = currentSet.exercises[0]
     if (nextExerciseInSet) {
       return {
         name: nextExerciseInSet.name,
@@ -129,7 +132,7 @@ function getDisplayedExercise(
 
     if (currentRepeat < totalRepeats) {
       return {
-        name: `Repeat set ${currentRepeat + 1}`,
+        name: currentExercise?.name || 'Exercise',
         isUpcoming: true,
         setLabel: `Set ${currentSetIndex + 1} / ${totalSets}`,
         repLabel: `Rep ${currentRepeat + 1} / ${totalRepeats}`,
@@ -261,7 +264,9 @@ export default function TimerDisplay({
             </p>
             <div className="mt-6 w-full max-w-lg mx-auto space-y-3">
               <div className="flex justify-between text-xs text-white/70">
-                <span>{nextUpLabel}</span>
+                {phase !== 'rest' && phase !== 'restBetweenSets' && (
+                  <span>{nextUpLabel}</span>
+                )}
                 <span>
                   {formatTime(totalTimeElapsed)} /{' '}
                   {formatTime(Math.max(totalTime, 0))}

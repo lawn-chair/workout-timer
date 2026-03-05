@@ -180,7 +180,7 @@ describe('TimerDisplay', () => {
 
     render(<TimerDisplay showWakeLockNotice={false} />)
 
-    expect(screen.getByText('Next: Repeat set 2')).toBeInTheDocument()
+    expect(screen.getByText('Next: Push-ups')).toBeInTheDocument()
   })
 
   it('shows next exercise placeholder during rest when missing', () => {
@@ -210,7 +210,6 @@ describe('TimerDisplay', () => {
     render(<TimerDisplay showWakeLockNotice={false} />)
 
     expect(screen.getByText('Up Next: Workout Complete!')).toBeInTheDocument()
-    expect(screen.getByText('Next: Exercise')).toBeInTheDocument()
   })
 
   it('shows finish next label on last exercise and set', () => {
@@ -271,7 +270,7 @@ describe('TimerDisplay', () => {
 
     render(<TimerDisplay showWakeLockNotice={false} />)
 
-    expect(screen.getByText('Next: Squats')).toBeInTheDocument()
+    expect(screen.getByText('Up Next: Squats')).toBeInTheDocument()
   })
 
   it('shows next up label for rest between sets', () => {
@@ -308,7 +307,7 @@ describe('TimerDisplay', () => {
 
     render(<TimerDisplay showWakeLockNotice={false} />)
 
-    expect(screen.getByText('Next: Set 2')).toBeInTheDocument()
+    expect(screen.getByText('Squats')).toBeInTheDocument()
   })
 
   it('shows repeat message during rest when moving to next repeat', () => {
@@ -337,7 +336,7 @@ describe('TimerDisplay', () => {
 
     render(<TimerDisplay showWakeLockNotice={false} />)
 
-    expect(screen.getByText('Up Next: Repeat set 2')).toBeInTheDocument()
+    expect(screen.getByText('Up Next: Push-ups')).toBeInTheDocument()
   })
 
   it('shows next set first exercise during rest when moving to next set', () => {
