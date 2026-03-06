@@ -25,14 +25,14 @@ npm run typecheck    # TypeScript type check
 npm run check        # lint + typecheck + tests
 ```
 
-## Workflow Defaults
+## Workflow
 
-- Always write a plan to a descriptive `/docs/*.md` file before implementation.
 - Review `docs/dev-checklist.md` before starting any new work.
-- Always create a new branch for work.
-- Never reuse an existing branch for a new feature or fix; always branch fresh from `origin/main`.
+- Create a new branch from `origin/main` for each task.
+- Never reuse an existing branch for a new feature or fix.
+- Write a plan to a descriptive `/docs/*.md` file before implementation.
 - Auto-commit after each task, including both feature and tests when practical.
-- Run `npm run check` before opening a PR, and only open the PR after tests pass.
+- Run `npm run check` before opening a PR.
 
 ## Project Structure
 
@@ -43,40 +43,27 @@ npm run check        # lint + typecheck + tests
 
 ## Testing
 
-**Always write tests for new features and bug fixes.** This is required for every change.
-
 - Framework: Vitest + React Testing Library
 - Test files: `*.{test,spec}.{ts,tsx}` in `src/`, co-located with the code they test
 - Setup: `src/test/setup.ts` (includes jest-dom matchers)
 
-### When to write tests
-
-- Add new feature → write tests
-- Fix a bug → write a test that reproduces the bug first, then fix it
-- Refactor code → ensure existing tests still pass
-
-### What to test
-
-- Business logic (store/state management): always write unit tests
-- Utility functions: write unit tests
-- React components: write component tests for user interactions and rendering
-
-Example test:
-
-```tsx
-import { render, screen } from '@testing-library/react'
-import MyComponent from './MyComponent'
-
-test('renders', () => {
-  render(<MyComponent />)
-  expect(screen.getByText('Hello')).toBeInTheDocument()
-})
-```
+Always write tests for new features and bug fixes.
 
 ## Conventions
 
 - Use TypeScript for all files
 - Use functional components with hooks
 - Use `@/` alias for imports (maps to `src/`)
-- Run `npm run check` before completing any task
 - Write tests for all new features and bug fixes
+
+## Subagents
+
+This project has specialized subagents for domain-specific tasks:
+
+- `@timer-expert` - Timer functionality (`src/lib/timer/**`, `src/components/timer/**`)
+- `@workout-expert` - Workout management (`src/lib/workout/**`, `src/app/api/workouts/**`)
+- `@ui-expert` - UI components (`src/components/**`)
+- `@test-expert` - Testing (all `*.test.{ts,tsx}`)
+- `@docs-expert` - Documentation (`docs/**`, `README.md`)
+
+Example: `@timer-expert "add countdown beep before rest ends"`

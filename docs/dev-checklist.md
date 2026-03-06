@@ -1,21 +1,19 @@
 # Dev Checklist
 
+See [AGENTS.md](../AGENTS.md) for detailed commands, workflow, and conventions.
+
 ## Before you start
 
-- Read `AGENTS.md`.
-- `git fetch origin` and create a new branch from `origin/main`.
-- Confirm branch and tracking with `git status -sb` and `git branch -vv`.
-- Do not reuse an existing branch for a new feature or fix. Always create a fresh branch per task.
-- Write a plan to a descriptive `docs/*.md` file.
+- [ ] Read AGENTS.md
+- [ ] `git fetch origin` and create new branch from `origin/main`
+- [ ] Write plan to `docs/*.md`
 
 ## While you work
 
-- Follow existing conventions and patterns.
-- Add tests for any new feature or bug fix.
-- Keep changes scoped to the task.
+- [ ] Follow conventions (see AGENTS.md)
+- [ ] Add tests for new features/bug fixes
 
 ## Before you open a PR
 
-- Run `npm run check` and ensure it passes.
-- Ensure the branch is up to date with `origin/main` if needed.
-- Verify commits match the task scope.
+- [ ] Run `npm run check`
+- [ ] Verify branch is up to date with `origin/main`
