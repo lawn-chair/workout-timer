@@ -1,24 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { WorkoutFormData } from '@/lib/workout/types'
-import { useCreateWorkout } from '@/lib/workout/queries'
+import { useUpdateWorkout } from '@/lib/workout/queries'
 import AppShell from '@/components/ui/AppShell'
 import IconMark from '@/components/ui/IconMark'
-import { createSet, SetDraft } from '@/lib/workout/builder'
 import WorkoutBuilderSets from '@/components/workout/WorkoutBuilderSets'
+import { hydrateWorkoutSets, SetDraft } from '@/lib/workout/builder'
+import { WorkoutSet } from '@/lib/workout/types'
 
-export default function NewWorkoutPage() {
+interface WorkoutWithSets {
+  id: string
+  name: string
+  description?: string | null
+  tags?: string[] | null
+  isPublic: boolean
+  sets: WorkoutSet[]
+}
+
+export default function EditWorkoutForm({
+  workout,
+}: {
+  workout: WorkoutWithSets
+}) {
   const router = useRouter()
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [tags, setTags] = useState('')
-  const [isPublic, setIsPublic] = useState(false)
-  const [sets, setSets] = useState<SetDraft[]>([createSet()])
+  const [name, setName] = useState(workout.name)
+  const [description, setDescription] = useState(workout.description || '')
+  const [tags, setTags] = useState((workout.tags ?? []).join(', '))
+  const [isPublic, setIsPublic] = useState(workout.isPublic)
+  const [sets, setSets] = useState<SetDraft[]>(hydrateWorkoutSets(workout.sets))
   const [saving, setSaving] = useState(false)
 
-  const createMutation = useCreateWorkout()
+  const { mutateAsync: updateWorkout } = useUpdateWorkout(workout.id)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +43,10 @@ export default function NewWorkoutPage() {
     const data: WorkoutFormData = {
       name: name.trim(),
       description: description.trim() || undefined,
-      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+      tags: tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
       isPublic,
       sets: sets
         .map((set) => ({
@@ -51,7 +68,7 @@ export default function NewWorkoutPage() {
       return
     }
 
-    await createMutation.mutateAsync(data)
+    await updateWorkout(data)
     router.push('/')
   }
 
@@ -65,9 +82,9 @@ export default function NewWorkoutPage() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-lime-300/80">
-                Build Workout
+                Edit Workout
               </p>
-              <h1 className="display-font text-3xl">New Session</h1>
+              <h1 className="display-font text-3xl">Refine Session</h1>
             </div>
           </div>
         </header>
@@ -152,9 +169,9 @@ export default function NewWorkoutPage() {
                 type="submit"
                 disabled={saving || !name.trim()}
                 className="flex-1 lime-button disabled:bg-gray-600 py-3 rounded-full font-medium"
-                data-testid="create-workout-button"
+                data-testid="update-workout-button"
               >
-                {saving ? 'Saving...' : 'Create Workout'}
+                {saving ? 'Saving...' : 'Update Workout'}
               </button>
             </div>
           </form>

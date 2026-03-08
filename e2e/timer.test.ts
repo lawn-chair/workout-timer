@@ -74,13 +74,13 @@ test.describe('Timer page', () => {
     expect(phaseBefore).not.toBe(phaseAfter)
   })
 
-  test('stop button returns to ready state', async ({ page }) => {
+  test('stop button returns to home page', async ({ page }) => {
     await page
       .getByTestId(/start-workout-/)
       .first()
       .click()
     await page.getByTestId('timer-start-button').click()
     await page.getByTestId('timer-stop-button').click()
-    await expect(page.getByTestId('timer-phase')).toHaveText('Ready')
+    await expect(page).toHaveURL('/')
   })
 })

@@ -85,7 +85,7 @@ export async function PATCH(
       slug?: string
       description?: string | null
       isPublic?: boolean
-      tags?: string
+      tags?: string[]
     } = {}
 
     if (name !== undefined) {

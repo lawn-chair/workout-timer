@@ -1,9 +1,8 @@
-const VERSION = 'v1'
+const VERSION = 'v2'
 const CACHE_NAME = `workout-timer-${VERSION}`
 const OFFLINE_URL = '/offline'
 
 const APP_SHELL = [
-  '/',
   OFFLINE_URL,
   '/manifest.webmanifest',
   '/icons/icon-192.png',

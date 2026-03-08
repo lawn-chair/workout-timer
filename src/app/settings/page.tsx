@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { fetchUserSettings, updateUserSettings } from '@/lib/workout/api'
+import { type Settings, defaultSettings } from '@/lib/settings'
 import AppShell from '@/components/ui/AppShell'
 import IconMark from '@/components/ui/IconMark'
 import StatePanel from '@/components/ui/StatePanel'
@@ -14,24 +15,6 @@ import {
   type ThemeMode,
   type AccessibilityPreset,
 } from '@/components/ui/ThemeProvider'
-
-interface UserSettings {
-  countdownBeeps: boolean
-  workStartSound: boolean
-  restStartSound: boolean
-  completionChime: boolean
-  theme?: ThemeMode
-  accessibility?: AccessibilityPreset
-}
-
-const defaultSettings: UserSettings = {
-  countdownBeeps: true,
-  workStartSound: true,
-  restStartSound: true,
-  completionChime: true,
-  theme: 'system',
-  accessibility: 'default',
-}
 
 export default function SettingsPage() {
   return (
@@ -45,7 +28,7 @@ function SettingsContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { theme, accessibility, setTheme, setAccessibility } = useTheme()
-  const [settings, setSettings] = useState<UserSettings>(defaultSettings)
+  const [settings, setSettings] = useState<Settings>(defaultSettings)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -58,12 +41,10 @@ function SettingsContent() {
     if (status === 'authenticated') {
       fetchUserSettings()
         .then((data) => {
-          const fetched = data as Partial<UserSettings>
           setSettings({
-            ...defaultSettings,
-            ...fetched,
-            theme: fetched.theme || theme,
-            accessibility: fetched.accessibility || accessibility,
+            ...data,
+            theme: data.theme || theme,
+            accessibility: data.accessibility || accessibility,
           })
           setLoading(false)
         })
@@ -75,7 +56,7 @@ function SettingsContent() {
     setSaving(true)
     setSaved(false)
     try {
-      await updateUserSettings(settings as unknown as Record<string, unknown>)
+      await updateUserSettings(settings)
       if (settings.theme) {
         setTheme(settings.theme)
       }
@@ -91,7 +72,7 @@ function SettingsContent() {
     }
   }
 
-  const toggleSetting = (key: keyof UserSettings) => {
+  const toggleSetting = (key: keyof Settings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 

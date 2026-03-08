@@ -42,8 +42,8 @@ vi.mock('./audio', () => ({
 
 import { audioManager } from './audio'
 
-function TestComponent() {
-  useTimerAudio()
+function TestComponent({ prefs }: { prefs?: Parameters<typeof useTimerAudio>[0] } = {}) {
+  useTimerAudio(prefs)
   const { phase, isRunning, timeRemaining } = useTimerStore()
   return (
     <div>
@@ -195,6 +195,48 @@ describe('useTimerAudio', () => {
     render(<TestComponent />)
 
     expect(audioManager.playCountdown).not.toHaveBeenCalled()
+  })
+
+  it('should not play countdown when countdownBeeps is false', () => {
+    const workout = createWorkout([
+      { exercises: [{ name: 'Push-ups', workDuration: 30 }] },
+    ])
+    useTimerStore.getState().loadWorkout(workout)
+    useTimerStore.getState().start()
+
+    render(
+      <TestComponent
+        prefs={{
+          countdownBeeps: false,
+          workStartSound: true,
+          restStartSound: true,
+          completionChime: true,
+        }}
+      />
+    )
+
+    expect(audioManager.playCountdown).not.toHaveBeenCalled()
+  })
+
+  it('should not play work start when workStartSound is false', () => {
+    const workout = createWorkout([
+      { exercises: [{ name: 'Push-ups', workDuration: 30 }] },
+    ])
+    useTimerStore.getState().loadWorkout(workout)
+    useTimerStore.setState({ phase: 'work', timeRemaining: 30, isRunning: true })
+
+    render(
+      <TestComponent
+        prefs={{
+          countdownBeeps: true,
+          workStartSound: false,
+          restStartSound: true,
+          completionChime: true,
+        }}
+      />
+    )
+
+    expect(audioManager.playWorkStart).not.toHaveBeenCalled()
   })
 
   it('should only play phase change audio once on subsequent renders', () => {

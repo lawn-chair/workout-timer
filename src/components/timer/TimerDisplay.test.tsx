@@ -151,7 +151,7 @@ describe('TimerDisplay', () => {
 
     render(<TimerDisplay showWakeLockNotice={false} />)
 
-    expect(screen.getByText('Next: Set 2')).toBeInTheDocument()
+    expect(screen.getByText('Next: Squats')).toBeInTheDocument()
   })
 
   it('shows repeat next label when more repeats remain', () => {

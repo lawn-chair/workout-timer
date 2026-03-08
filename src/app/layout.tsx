@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Bebas_Neue, Manrope, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
+import QueryProvider from '@/components/providers/QueryProvider'
 import { Analytics } from '@vercel/analytics/next'
 import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
@@ -51,7 +52,9 @@ export default function RootLayout({
         className={`${bodyFont.variable} ${displayFont.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <QueryProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </QueryProvider>
         </ThemeProvider>
         <Analytics />
         <ServiceWorkerRegister />
