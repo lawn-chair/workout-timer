@@ -209,4 +209,33 @@ describe('useTimer', () => {
 
     expect(screen.getByTestId('time').textContent).toBe(timeBefore)
   })
+
+  it('fires multiple ticks to catch up after elapsed time', () => {
+    let dateNow = 1_000_000
+    vi.spyOn(Date, 'now').mockImplementation(() => dateNow)
+
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [{ name: 'Push-ups', workDuration: 10 }],
+      },
+    ])
+    useTimerStore.getState().loadWorkout(workout)
+    useTimerStore.setState({ phase: 'work', timeRemaining: 10, isRunning: true })
+
+    render(<TestComponent />)
+
+    // Simulate 3 seconds passing before the interval fires
+    dateNow += 3000
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+
+    // Should have fired 3 ticks (floor(3000/1000) = 3)
+    expect(useTimerStore.getState().timeRemaining).toBe(7)
+
+    vi.restoreAllMocks()
+  })
 })
