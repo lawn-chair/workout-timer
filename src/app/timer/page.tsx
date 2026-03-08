@@ -1,22 +1,45 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import TimerDisplay from '@/components/timer/TimerDisplay'
 import TimerControls from '@/components/timer/TimerControls'
 import { useTimerStore } from '@/lib/timer/store'
 import { useTimer } from '@/lib/timer/useTimer'
-import { useTimerAudio } from '@/lib/timer/useTimerAudio'
+import { useTimerAudio, AudioPreferences } from '@/lib/timer/useTimerAudio'
 import { useWakeLock } from '@/lib/timer/useWakeLock'
+import { fetchUserSettings } from '@/lib/workout/api'
 import AppShell from '@/components/ui/AppShell'
 import StatePanel from '@/components/ui/StatePanel'
+
+const defaultAudioPrefs: AudioPreferences = {
+  countdownBeeps: true,
+  workStartSound: true,
+  restStartSound: true,
+  completionChime: true,
+}
 
 export default function TimerPage() {
   const router = useRouter()
   const { phase, workout, isRunning } = useTimerStore()
+  const [audioPrefs, setAudioPrefs] =
+    useState<AudioPreferences>(defaultAudioPrefs)
+
+  useEffect(() => {
+    fetchUserSettings()
+      .then((s) =>
+        setAudioPrefs({
+          countdownBeeps: (s.countdownBeeps as boolean) ?? true,
+          workStartSound: (s.workStartSound as boolean) ?? true,
+          restStartSound: (s.restStartSound as boolean) ?? true,
+          completionChime: (s.completionChime as boolean) ?? true,
+        })
+      )
+      .catch(() => {})
+  }, [])
 
   useTimer()
-  useTimerAudio()
+  useTimerAudio(audioPrefs)
   const { isSupported: wakeLockSupported } = useWakeLock(
     isRunning && phase !== 'idle' && phase !== 'complete'
   )
