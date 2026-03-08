@@ -174,7 +174,14 @@ describe('workout api', () => {
   })
 
   it('updateUserSettings patches settings', async () => {
-    const settings = { theme: 'dark' }
+    const settings = {
+      theme: 'dark' as const,
+      countdownBeeps: true,
+      workStartSound: true,
+      restStartSound: true,
+      completionChime: true,
+      accessibility: 'default' as const,
+    }
     vi.mocked(fetch).mockResolvedValue(okJsonResponse(settings))
 
     await expect(updateUserSettings(settings)).resolves.toEqual(settings)
@@ -186,9 +193,17 @@ describe('workout api', () => {
   })
 
   it('updateUserSettings throws on error', async () => {
+    const settings = {
+      theme: 'dark' as const,
+      countdownBeeps: true,
+      workStartSound: true,
+      restStartSound: true,
+      completionChime: true,
+      accessibility: 'default' as const,
+    }
     vi.mocked(fetch).mockResolvedValue(errorResponse({}))
 
-    await expect(updateUserSettings({})).rejects.toThrow(
+    await expect(updateUserSettings(settings)).rejects.toThrow(
       'Failed to update settings'
     )
   })

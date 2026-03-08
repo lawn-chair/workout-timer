@@ -1,4 +1,5 @@
 import { Workout, WorkoutFormData } from './types'
+import type { Settings } from '@/lib/settings'
 
 export type { Workout, WorkoutFormData }
 
@@ -85,7 +86,7 @@ export async function fetchPublicWorkout(id: string): Promise<Workout> {
   return response.json()
 }
 
-export async function fetchUserSettings(): Promise<Record<string, unknown>> {
+export async function fetchUserSettings(): Promise<Settings> {
   const response = await fetch('/api/settings')
   if (!response.ok) {
     throw new Error('Failed to fetch settings')
@@ -93,9 +94,7 @@ export async function fetchUserSettings(): Promise<Record<string, unknown>> {
   return response.json()
 }
 
-export async function updateUserSettings(
-  settings: Record<string, unknown>
-): Promise<Record<string, unknown>> {
+export async function updateUserSettings(settings: Settings): Promise<Settings> {
   const response = await fetch('/api/settings', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
