@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import TimerDisplay from '@/components/timer/TimerDisplay'
 import TimerControls from '@/components/timer/TimerControls'
@@ -14,6 +14,15 @@ import StatePanel from '@/components/ui/StatePanel'
 export default function TimerPage() {
   const router = useRouter()
   const { phase, workout, isRunning } = useTimerStore()
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    const unsub = useTimerStore.persist.onFinishHydration(() =>
+      setHydrated(true)
+    )
+    if (useTimerStore.persist.hasHydrated()) setHydrated(true)
+    return unsub
+  }, [])
 
   useTimer()
   useTimerAudio()
@@ -22,10 +31,10 @@ export default function TimerPage() {
   )
 
   useEffect(() => {
-    if (!workout) {
+    if (hydrated && !workout) {
       router.push('/')
     }
-  }, [workout, router])
+  }, [hydrated, workout, router])
 
   if (!workout) {
     return (

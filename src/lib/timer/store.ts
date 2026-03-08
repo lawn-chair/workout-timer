@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import {
   TimerState,
   TimerPhase,
@@ -184,7 +185,9 @@ function getNextPhase(
   return null
 }
 
-export const useTimerStore = create<TimerState>((set, get) => ({
+export const useTimerStore = create<TimerState>()(
+  persist(
+    (set, get) => ({
   workout: null,
   phase: 'idle',
   currentSetIndex: 0,
@@ -256,6 +259,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
 
   stop: () => {
     set({
+      workout: null,
       phase: 'idle',
       currentSetIndex: 0,
       currentExerciseIndex: 0,
@@ -303,4 +307,20 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       })
     }
   },
-}))
+    }),
+    {
+      name: 'timer-state',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        workout: state.workout,
+        phase: state.phase,
+        currentSetIndex: state.currentSetIndex,
+        currentExerciseIndex: state.currentExerciseIndex,
+        currentRepeat: state.currentRepeat,
+        timeRemaining: state.timeRemaining,
+        totalTimeElapsed: state.totalTimeElapsed,
+        // isRunning intentionally excluded — always restore as paused
+      }),
+    }
+  )
+)
