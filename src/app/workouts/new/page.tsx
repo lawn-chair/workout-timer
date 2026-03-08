@@ -28,7 +28,7 @@ export default function NewWorkoutPage() {
     const data: WorkoutFormData = {
       name: name.trim(),
       description: description.trim() || undefined,
-      tags: tags.trim() || undefined,
+      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
       isPublic,
       sets: sets
         .map((set) => ({
