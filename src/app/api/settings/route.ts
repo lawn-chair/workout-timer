@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
+import { parseSettings } from '@/lib/settings'
 
 export async function GET() {
   try {
@@ -14,7 +15,7 @@ export async function GET() {
       select: { settings: true },
     })
 
-    return NextResponse.json(dbUser?.settings || {})
+    return NextResponse.json(parseSettings(dbUser?.settings))
   } catch (error) {
     console.error('Error fetching settings:', error)
     return NextResponse.json(
@@ -32,13 +33,14 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json()
+    const settings = parseSettings(body)
 
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
-      data: { settings: body },
+      data: { settings },
     })
 
-    return NextResponse.json(updatedUser.settings)
+    return NextResponse.json(parseSettings(updatedUser.settings))
   } catch (error) {
     console.error('Error updating settings:', error)
     return NextResponse.json(
