@@ -24,6 +24,15 @@ export default function TimerPage() {
   const { phase, workout, isRunning } = useTimerStore()
   const [audioPrefs, setAudioPrefs] =
     useState<AudioPreferences>(defaultAudioPrefs)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    const unsub = useTimerStore.persist.onFinishHydration(() =>
+      setHydrated(true)
+    )
+    if (useTimerStore.persist.hasHydrated()) setHydrated(true)
+    return unsub
+  }, [])
 
   useEffect(() => {
     fetchUserSettings()
@@ -45,10 +54,10 @@ export default function TimerPage() {
   )
 
   useEffect(() => {
-    if (!workout) {
+    if (hydrated && !workout) {
       router.push('/')
     }
-  }, [workout, router])
+  }, [hydrated, workout, router])
 
   if (!workout) {
     return (
