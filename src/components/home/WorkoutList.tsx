@@ -31,29 +31,14 @@ export default function WorkoutList({ initialWorkouts, user }: Props) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
 
   const allTags = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          workouts.flatMap((w) =>
-            (w.tags || '')
-              .split(',')
-              .map((t) => t.trim())
-              .filter(Boolean)
-          )
-        )
-      ),
+    () => Array.from(new Set(workouts.flatMap((w) => w.tags ?? []))),
     [workouts]
   )
 
   const filteredWorkouts = useMemo(
     () =>
       selectedTag
-        ? workouts.filter((w) =>
-            (w.tags || '')
-              .split(',')
-              .map((t) => t.trim())
-              .includes(selectedTag)
-          )
+        ? workouts.filter((w) => (w.tags ?? []).includes(selectedTag))
         : workouts,
     [selectedTag, workouts]
   )
@@ -303,20 +288,16 @@ export default function WorkoutList({ initialWorkouts, user }: Props) {
                                   {workout.description}
                                 </p>
                               )}
-                              {workout.tags && (
+                              {workout.tags && workout.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-3">
-                                  {workout.tags
-                                    .split(',')
-                                    .map((t) => t.trim())
-                                    .filter(Boolean)
-                                    .map((tag) => (
-                                      <span
-                                        key={tag}
-                                        className="chip text-xs px-3 py-1 rounded-full"
-                                      >
-                                        {tag}
-                                      </span>
-                                    ))}
+                                  {workout.tags.map((tag) => (
+                                    <span
+                                      key={tag}
+                                      className="chip text-xs px-3 py-1 rounded-full"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
                                 </div>
                               )}
                               <div className="grid grid-cols-3 gap-4 text-xs text-gray-400 mt-4">

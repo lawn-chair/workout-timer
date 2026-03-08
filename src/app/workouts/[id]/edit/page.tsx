@@ -23,5 +23,6 @@ export default async function EditWorkoutPage({
 
   if (!workout) notFound()
 
-  return <EditWorkoutForm workout={workout} />
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <EditWorkoutForm workout={workout as any} />
 }

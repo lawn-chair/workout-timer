@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useWorkoutStore, WorkoutFormData } from '@/lib/workout/store'
+import { WorkoutFormData } from '@/lib/workout/types'
+import { useUpdateWorkout } from '@/lib/workout/queries'
 import AppShell from '@/components/ui/AppShell'
 import IconMark from '@/components/ui/IconMark'
 import WorkoutBuilderSets from '@/components/workout/WorkoutBuilderSets'
@@ -13,7 +14,7 @@ interface WorkoutWithSets {
   id: string
   name: string
   description?: string | null
-  tags?: string | null
+  tags?: string[] | null
   isPublic: boolean
   sets: WorkoutSet[]
 }
@@ -26,14 +27,12 @@ export default function EditWorkoutForm({
   const router = useRouter()
   const [name, setName] = useState(workout.name)
   const [description, setDescription] = useState(workout.description || '')
-  const [tags, setTags] = useState(workout.tags || '')
+  const [tags, setTags] = useState((workout.tags ?? []).join(', '))
   const [isPublic, setIsPublic] = useState(workout.isPublic)
-  const [sets, setSets] = useState<SetDraft[]>(
-    hydrateWorkoutSets(workout.sets)
-  )
+  const [sets, setSets] = useState<SetDraft[]>(hydrateWorkoutSets(workout.sets))
   const [saving, setSaving] = useState(false)
 
-  const { updateWorkout } = useWorkoutStore()
+  const { mutateAsync: updateWorkout } = useUpdateWorkout(workout.id)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,7 +43,10 @@ export default function EditWorkoutForm({
     const data: WorkoutFormData = {
       name: name.trim(),
       description: description.trim() || undefined,
-      tags: tags.trim() || undefined,
+      tags: tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
       isPublic,
       sets: sets
         .map((set) => ({
@@ -66,7 +68,7 @@ export default function EditWorkoutForm({
       return
     }
 
-    await updateWorkout(workout.id, data)
+    await updateWorkout(data)
     router.push('/')
   }
 
