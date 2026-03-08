@@ -5,7 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { useWorkoutStore, Workout } from '@/lib/workout/store'
+import { Workout } from '@/lib/workout/types'
+import { useWorkouts, useDeleteWorkout } from '@/lib/workout/queries'
 import { useTimerStore } from '@/lib/timer/store'
 import { fetchPublicWorkouts } from '@/lib/workout/api'
 import AppShell from '@/components/ui/AppShell'
@@ -17,8 +18,8 @@ export default function Home() {
   const { data: session, status } = useSession()
   const loadWorkout = useTimerStore((s) => s.loadWorkout)
 
-  const { workouts, isLoading, fetchWorkouts, deleteWorkout } =
-    useWorkoutStore()
+  const { data: workouts = [], isLoading } = useWorkouts()
+  const deleteMutation = useDeleteWorkout()
   const [publicWorkouts, setPublicWorkouts] = useState<Workout[]>([])
   const [showPublic, setShowPublic] = useState(false)
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
@@ -80,10 +81,8 @@ export default function Home() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login')
-    } else if (status === 'authenticated') {
-      fetchWorkouts()
     }
-  }, [status, router, fetchWorkouts])
+  }, [status, router])
 
   useEffect(() => {
     if (showPublic) {
@@ -94,7 +93,7 @@ export default function Home() {
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault()
     if (!confirm('Delete this workout?')) return
-    await deleteWorkout(id)
+    deleteMutation.mutate(id)
   }
 
   const handleStart = (workout: Workout) => {

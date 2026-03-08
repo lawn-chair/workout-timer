@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useWorkoutStore, WorkoutFormData } from '@/lib/workout/store'
+import { WorkoutFormData } from '@/lib/workout/types'
+import { useUpdateWorkout } from '@/lib/workout/queries'
 import { fetchWorkout } from '@/lib/workout/api'
 import AppShell from '@/components/ui/AppShell'
 import IconMark from '@/components/ui/IconMark'
@@ -27,7 +28,7 @@ export default function EditWorkoutPage({
   const [sets, setSets] = useState<SetDraft[]>([createSet()])
   const [saving, setSaving] = useState(false)
 
-  const { updateWorkout } = useWorkoutStore()
+  const updateMutation = useUpdateWorkout(id)
 
   useEffect(() => {
     fetchWorkout(id)
@@ -76,7 +77,7 @@ export default function EditWorkoutPage({
       return
     }
 
-    await updateWorkout(id, data)
+    await updateMutation.mutateAsync(data)
     router.push('/')
   }
 

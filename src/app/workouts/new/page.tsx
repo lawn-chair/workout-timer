@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useWorkoutStore, WorkoutFormData } from '@/lib/workout/store'
+import { WorkoutFormData } from '@/lib/workout/types'
+import { useCreateWorkout } from '@/lib/workout/queries'
 import AppShell from '@/components/ui/AppShell'
 import IconMark from '@/components/ui/IconMark'
 import { createSet, SetDraft } from '@/lib/workout/builder'
@@ -17,7 +18,7 @@ export default function NewWorkoutPage() {
   const [sets, setSets] = useState<SetDraft[]>([createSet()])
   const [saving, setSaving] = useState(false)
 
-  const { createWorkout } = useWorkoutStore()
+  const createMutation = useCreateWorkout()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,7 +51,7 @@ export default function NewWorkoutPage() {
       return
     }
 
-    await createWorkout(data)
+    await createMutation.mutateAsync(data)
     router.push('/')
   }
 
