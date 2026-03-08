@@ -65,7 +65,7 @@ export async function POST(request: Request) {
         name,
         description,
         slug,
-        tags: tags || '',
+        tags: Array.isArray(tags) ? tags : [],
         isPublic: isPublic || false,
         userId: user.id,
         sets: sets

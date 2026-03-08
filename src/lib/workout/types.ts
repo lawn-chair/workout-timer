@@ -19,7 +19,7 @@ export interface Workout {
   name: string
   description?: string
   slug?: string
-  tags?: string
+  tags?: string[]
   isPublic?: boolean
   sets: WorkoutSet[]
   createdAt: Date
@@ -30,7 +30,7 @@ export interface WorkoutFormData {
   name: string
   description?: string
   isPublic?: boolean
-  tags?: string
+  tags?: string[]
   sets: {
     repeatCount: number
     restBetweenExercises: number

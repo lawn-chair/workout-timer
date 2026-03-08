@@ -34,7 +34,7 @@ export default function EditWorkoutPage({
       .then((workout) => {
         setName(workout.name)
         setDescription(workout.description || '')
-        setTags(workout.tags || '')
+        setTags((workout.tags ?? []).join(', '))
         setIsPublic(workout.isPublic || false)
         setSets(hydrateWorkoutSets(workout.sets))
         setLoading(false)
@@ -54,7 +54,7 @@ export default function EditWorkoutPage({
     const data: WorkoutFormData = {
       name: name.trim(),
       description: description.trim() || undefined,
-      tags: tags.trim() || undefined,
+      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
       isPublic,
       sets: sets
         .map((set) => ({

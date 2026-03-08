@@ -41,7 +41,7 @@ export async function POST(
         name: `${sourceWorkout.name} (Copy)`,
         description: sourceWorkout.description,
         slug,
-        tags: sourceWorkout.tags,
+        tags: Array.isArray(sourceWorkout.tags) ? sourceWorkout.tags : [],
         isPublic: false,
         userId: user.id,
         sets: {
