@@ -1,10 +1,16 @@
 class AudioManager {
   private ctx: AudioContext | null = null
   private enabled = true
+  private resumePromise: Promise<void> | null = null
+  private visibilityHandler: (() => void) | null = null
 
   private getContext(): AudioContext {
     if (!this.ctx) {
-      this.ctx = new AudioContext()
+      const Ctx =
+        window.AudioContext ??
+        (window as Window & { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext
+      this.ctx = new Ctx()
     }
     return this.ctx
   }
@@ -19,18 +25,27 @@ class AudioManager {
     try {
       const ctx = this.getContext()
       if (ctx.state === 'suspended') {
-        void ctx.resume()
+        this.resumePromise = ctx.resume()
       }
 
-      const oscillator = ctx.createOscillator()
-      const gain = ctx.createGain()
+      // Real buffer source (not zero-gain oscillator) satisfies iOS user-gesture check
+      const buffer = ctx.createBuffer(1, 1, ctx.sampleRate)
+      const source = ctx.createBufferSource()
+      source.buffer = buffer
+      source.connect(ctx.destination)
+      source.start(ctx.currentTime)
 
-      oscillator.connect(gain)
-      gain.connect(ctx.destination)
-
-      gain.gain.setValueAtTime(0, ctx.currentTime)
-      oscillator.start(ctx.currentTime)
-      oscillator.stop(ctx.currentTime + 0.01)
+      if (!this.visibilityHandler) {
+        this.visibilityHandler = () => {
+          if (
+            document.visibilityState === 'visible' &&
+            this.ctx?.state === 'suspended'
+          ) {
+            void this.ctx.resume()
+          }
+        }
+        document.addEventListener('visibilitychange', this.visibilityHandler)
+      }
     } catch (e) {
       console.warn('Audio not available:', e)
     }
@@ -38,9 +53,17 @@ class AudioManager {
 
   playBeep(frequency = 800, duration = 0.1) {
     if (!this.enabled) return
+    void this._playBeepAsync(frequency, duration)
+  }
 
+  private async _playBeepAsync(frequency: number, duration: number) {
     try {
       const ctx = this.getContext()
+      // Await any in-flight resume from unlock() before playing
+      if (this.resumePromise) {
+        await this.resumePromise
+        this.resumePromise = null
+      }
       if (ctx.state === 'suspended') {
         void ctx.resume()
         return
