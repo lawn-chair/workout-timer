@@ -9,6 +9,11 @@ export default function TimerControls() {
     start()
   }
 
+  const handleResume = () => {
+    audioManager.unlock()
+    resume()
+  }
+
   if (phase === 'complete') return null
 
   return (
@@ -33,7 +38,7 @@ export default function TimerControls() {
             </button>
 
             <button
-              onClick={isRunning ? pause : resume}
+              onClick={isRunning ? pause : handleResume}
               className="w-20 h-20 rounded-full bg-white text-gray-900 text-2xl font-bold"
               data-testid="timer-pause-button"
             >

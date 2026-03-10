@@ -1,7 +1,6 @@
 class AudioManager {
   private ctx: AudioContext | null = null
   private enabled = true
-  private resumePromise: Promise<void> | null = null
   private visibilityHandler: (() => void) | null = null
 
   private getContext(): AudioContext {
@@ -24,16 +23,19 @@ class AudioManager {
 
     try {
       const ctx = this.getContext()
-      if (ctx.state === 'suspended') {
-        this.resumePromise = ctx.resume()
-      }
 
-      // Real buffer source (not zero-gain oscillator) satisfies iOS user-gesture check
+      // Connect audio nodes BEFORE calling resume — some iOS versions
+      // need connected nodes for resume to succeed
       const buffer = ctx.createBuffer(1, 1, ctx.sampleRate)
+      buffer.getChannelData(0)[0] = 1 // non-zero sample
       const source = ctx.createBufferSource()
       source.buffer = buffer
       source.connect(ctx.destination)
-      source.start(ctx.currentTime)
+      source.start(0)
+
+      if (ctx.state === 'suspended') {
+        void ctx.resume()
+      }
 
       if (!this.visibilityHandler) {
         this.visibilityHandler = () => {
@@ -53,33 +55,20 @@ class AudioManager {
 
   playBeep(frequency = 800, duration = 0.1) {
     if (!this.enabled) return
-    void this._playBeepAsync(frequency, duration)
-  }
-
-  private async _playBeepAsync(frequency: number, duration: number) {
     try {
       const ctx = this.getContext()
-      // Await any in-flight resume from unlock() before playing
-      if (this.resumePromise) {
-        await this.resumePromise
-        this.resumePromise = null
-      }
       if (ctx.state === 'suspended') {
         void ctx.resume()
-        return
       }
+      // Always schedule — nodes play when context resumes
       const oscillator = ctx.createOscillator()
       const gain = ctx.createGain()
-
       oscillator.connect(gain)
       gain.connect(ctx.destination)
-
       oscillator.frequency.value = frequency
       oscillator.type = 'sine'
-
       gain.gain.setValueAtTime(0.5, ctx.currentTime)
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration)
-
       oscillator.start(ctx.currentTime)
       oscillator.stop(ctx.currentTime + duration)
     } catch (e) {

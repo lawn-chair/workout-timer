@@ -70,7 +70,9 @@ describe('audioManager', () => {
         state = 'suspended'
         sampleRate = 44100
         resume = resume
-        createBuffer = vi.fn(() => ({}))
+        createBuffer = vi.fn(() => ({
+          getChannelData: vi.fn(() => new Float32Array(1)),
+        }))
         createBufferSource = vi.fn(() => ({
           connect: vi.fn(),
           start: vi.fn(),
