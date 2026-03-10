@@ -2,7 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const createAudioContextMock = (state: 'running' | 'suspended') => ({
   state,
+  sampleRate: 44100,
   resume: vi.fn().mockResolvedValue(undefined),
+  createBuffer: vi.fn(() => ({})),
+  createBufferSource: vi.fn(() => ({
+    connect: vi.fn(),
+    start: vi.fn(),
+    buffer: null,
+  })),
   createOscillator: vi.fn(() => ({
     connect: vi.fn(),
     start: vi.fn(),
@@ -37,7 +44,10 @@ describe('audioManager coverage', () => {
     const ctx = createAudioContextMock('running')
     globalThis.AudioContext = class {
       state = ctx.state
+      sampleRate = ctx.sampleRate
       resume = ctx.resume
+      createBuffer = ctx.createBuffer
+      createBufferSource = ctx.createBufferSource
       createOscillator = ctx.createOscillator
       createGain = ctx.createGain
       destination = ctx.destination
@@ -58,7 +68,10 @@ describe('audioManager coverage', () => {
     const ctx = createAudioContextMock('running')
     globalThis.AudioContext = class {
       state = ctx.state
+      sampleRate = ctx.sampleRate
       resume = ctx.resume
+      createBuffer = ctx.createBuffer
+      createBufferSource = ctx.createBufferSource
       createOscillator = ctx.createOscillator
       createGain = ctx.createGain
       destination = ctx.destination
@@ -79,7 +92,10 @@ describe('audioManager coverage', () => {
     const ctx = createAudioContextMock('suspended')
     globalThis.AudioContext = class {
       state = ctx.state
+      sampleRate = ctx.sampleRate
       resume = ctx.resume
+      createBuffer = ctx.createBuffer
+      createBufferSource = ctx.createBufferSource
       createOscillator = ctx.createOscillator
       createGain = ctx.createGain
       destination = ctx.destination
@@ -125,7 +141,10 @@ describe('audioManager coverage', () => {
     const ctx = createAudioContextMock('suspended')
     globalThis.AudioContext = class {
       state = ctx.state
+      sampleRate = ctx.sampleRate
       resume = ctx.resume
+      createBuffer = ctx.createBuffer
+      createBufferSource = ctx.createBufferSource
       createOscillator = ctx.createOscillator
       createGain = ctx.createGain
       destination = ctx.destination
@@ -139,6 +158,6 @@ describe('audioManager coverage', () => {
     audioManager.unlock()
 
     expect(ctx.resume).toHaveBeenCalled()
-    expect(ctx.createOscillator).toHaveBeenCalled()
+    expect(ctx.createBufferSource).toHaveBeenCalled()
   })
 })

@@ -65,23 +65,17 @@ describe('audioManager', () => {
   describe('unlock', () => {
     it('should resume audio context when suspended', () => {
       const resume = vi.fn().mockResolvedValue(undefined)
-      const createOscillator = vi.fn(() => ({
-        connect: vi.fn(),
-        start: vi.fn(),
-        stop: vi.fn(),
-      }))
-      const createGain = vi.fn(() => ({
-        connect: vi.fn(),
-        gain: {
-          setValueAtTime: vi.fn(),
-        },
-      }))
 
       class AudioContextMock {
         state = 'suspended'
+        sampleRate = 44100
         resume = resume
-        createOscillator = createOscillator
-        createGain = createGain
+        createBuffer = vi.fn(() => ({}))
+        createBufferSource = vi.fn(() => ({
+          connect: vi.fn(),
+          start: vi.fn(),
+          buffer: null,
+        }))
         destination = {}
         currentTime = 0
       }
