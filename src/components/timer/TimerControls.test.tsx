@@ -66,5 +66,6 @@ describe('TimerControls', () => {
     })
     fireEvent.click(screen.getByTestId('timer-pause-button'))
     expect(resumeSpy).toHaveBeenCalled()
+    expect(audioManager.unlock).toHaveBeenCalled()
   })
 })

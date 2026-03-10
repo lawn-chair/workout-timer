@@ -4,7 +4,9 @@ const createAudioContextMock = (state: 'running' | 'suspended') => ({
   state,
   sampleRate: 44100,
   resume: vi.fn().mockResolvedValue(undefined),
-  createBuffer: vi.fn(() => ({})),
+  createBuffer: vi.fn(() => ({
+    getChannelData: vi.fn(() => new Float32Array(1)),
+  })),
   createBufferSource: vi.fn(() => ({
     connect: vi.fn(),
     start: vi.fn(),
@@ -109,7 +111,7 @@ describe('audioManager coverage', () => {
     audioManager.playBeep(900, 0.2)
 
     expect(ctx.resume).toHaveBeenCalled()
-    expect(ctx.createOscillator).not.toHaveBeenCalled()
+    expect(ctx.createOscillator).toHaveBeenCalled()
   })
 
   it('handles audio context errors without throwing', async () => {
