@@ -4,7 +4,7 @@ import { useTimerStore } from './store'
 export function useTimer() {
   const { tick, isRunning, phase } = useTimerStore()
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const lastTickRef = useRef<number>(Date.now())
+  const lastTickRef = useRef<number>(0)
 
   useEffect(() => {
     if (isRunning && phase !== 'idle' && phase !== 'complete') {

@@ -257,7 +257,7 @@ describe('useTimerStore', () => {
       expect(state.timeRemaining).toBe(3)
     })
 
-    it('should increment total time elapsed', () => {
+    it('should not increment totalTimeElapsed during countdown', () => {
       const workout = createWorkout([
         {
           repeatCount: 1,
@@ -269,6 +269,24 @@ describe('useTimerStore', () => {
       useTimerStore.getState().loadWorkout(workout)
       useTimerStore.getState().start()
 
+      useTimerStore.getState().tick()
+
+      expect(useTimerStore.getState().totalTimeElapsed).toBe(0)
+    })
+
+    it('should increment totalTimeElapsed during work phase', () => {
+      const workout = createWorkout([
+        {
+          repeatCount: 1,
+          restBetweenExercises: 0,
+          restBetweenSets: 0,
+          exercises: [{ name: 'Push-ups', workDuration: 30 }],
+        },
+      ])
+      useTimerStore.getState().loadWorkout(workout)
+      useTimerStore.getState().start()
+
+      tickUntil('work')
       useTimerStore.getState().tick()
 
       expect(useTimerStore.getState().totalTimeElapsed).toBe(1)

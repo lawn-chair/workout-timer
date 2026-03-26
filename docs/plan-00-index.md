@@ -2,17 +2,17 @@
 
 Nine targeted improvements ordered by recommended implementation sequence. Each has a dedicated plan doc with exact diffs and file-level detail.
 
-| #   | Plan                               | Effort  | Impact     | Doc                                       |
-| --- | ---------------------------------- | ------- | ---------- | ----------------------------------------- |
-| 1   | Tags as JSON array                 | Low     | Medium     | [plan-01](./plan-01-tags-json-array.md)   |
-| 2   | Server components for data loading | Medium  | High       | [plan-03](./plan-03-server-components.md) |
-| 3   | TanStack Query for server state    | Medium  | High       | [plan-04](./plan-04-tanstack-query.md)    |
-| 4   | Wire up audio settings             | Low     | Medium     | [plan-07](./plan-07-audio-settings.md)    |
-| 5   | Timer state persistence            | Low     | Medium     | [plan-02](./plan-02-timer-persist.md)     |
-| 6   | Consolidate timer display logic    | Medium  | Medium     | [plan-05](./plan-05-timer-reducer.md)     |
-| 7   | Settings Zod validation            | Low     | Low        | [plan-06](./plan-06-settings-zod.md)      |
-| 8   | Timer drift correction             | Low     | Low-Medium | [plan-08](./plan-08-timer-drift.md)       |
-| 9   | Fix service worker cache           | Trivial | Low        | [plan-09](./plan-09-sw-cache-fix.md)      |
+| #   | Plan                               | Effort  | Impact     | Status    | Doc                                       |
+| --- | ---------------------------------- | ------- | ---------- | --------- | ----------------------------------------- |
+| 1   | Tags as JSON array                 | Low     | Medium     | ✅ Merged | [plan-01](./plan-01-tags-json-array.md)   |
+| 2   | Server components for data loading | Medium  | High       | ✅ Merged | [plan-03](./plan-03-server-components.md) |
+| 3   | TanStack Query for server state    | Medium  | High       | ✅ Merged | [plan-04](./plan-04-tanstack-query.md)    |
+| 4   | Wire up audio settings             | Low     | Medium     | ✅ Merged | [plan-07](./plan-07-audio-settings.md)    |
+| 5   | Timer state persistence            | Low     | Medium     | ✅ Merged | [plan-02](./plan-02-timer-persist.md)     |
+| 6   | Consolidate timer display logic    | Medium  | Medium     | ✅ Merged | [plan-05](./plan-05-timer-reducer.md)     |
+| 7   | Settings Zod validation            | Low     | Low        | ✅ Merged | [plan-06](./plan-06-settings-zod.md)      |
+| 8   | Timer drift correction             | Low     | Low-Medium | ✅ Merged | [plan-08](./plan-08-timer-drift.md)       |
+| 9   | Fix service worker cache           | Trivial | Low        | ✅ Merged | [plan-09](./plan-09-sw-cache-fix.md)      |
 
 ## Dependencies between plans
 

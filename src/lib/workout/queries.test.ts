@@ -17,8 +17,10 @@ function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
-  return ({ children }: { children: React.ReactNode }) =>
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
     createElement(QueryClientProvider, { client: queryClient }, children)
+  Wrapper.displayName = 'QueryClientWrapper'
+  return Wrapper
 }
 
 describe('workout queries', () => {
@@ -44,7 +46,7 @@ describe('workout queries', () => {
 
     it('returns initialData immediately without fetching', () => {
       const { result } = renderHook(
-        () => useWorkouts([mockWorkout] as typeof mockWorkout[]),
+        () => useWorkouts([mockWorkout] as (typeof mockWorkout)[]),
         { wrapper: createWrapper() }
       )
 
@@ -89,7 +91,10 @@ describe('workout queries', () => {
       vi.mocked(fetch).mockResolvedValue({ ok: true } as Response)
 
       const queryClient = new QueryClient({
-        defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
       })
       queryClient.setQueryData(['workouts'], [mockWorkout])
 

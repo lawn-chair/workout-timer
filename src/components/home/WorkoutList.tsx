@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { useTimerStore } from '@/lib/timer/store'
+import { getTotalWorkoutTime } from '@/lib/timer/types'
 import { deleteWorkout, fetchPublicWorkouts } from '@/lib/workout/api'
 import { Workout } from '@/lib/workout/types'
 import AppShell from '@/components/ui/AppShell'
@@ -48,19 +49,7 @@ export default function WorkoutList({ initialWorkouts, user }: Props) {
       (sum, set) => sum + set.exercises.length,
       0
     )
-    const totalSeconds = workout.sets.reduce((sum, set, setIndex) => {
-      const exerciseTotal = set.exercises.reduce(
-        (exerciseSum, exercise) => exerciseSum + exercise.workDuration,
-        0
-      )
-      const restBetweenExercises =
-        Math.max(set.exercises.length - 1, 0) * set.restBetweenExercises
-      const perSetTotal = exerciseTotal + restBetweenExercises
-      const repeatTotal = perSetTotal * Math.max(set.repeatCount, 1)
-      const setRestTotal =
-        setIndex < workout.sets.length - 1 ? set.restBetweenSets : 0
-      return sum + repeatTotal + setRestTotal
-    }, 0)
+    const totalSeconds = getTotalWorkoutTime(workout)
 
     return {
       exerciseCount,
