@@ -1,9 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import {
-  TimerState,
-  Workout,
-} from './types'
+import { TimerState, Workout } from './types'
 import { getNextPhaseInfo } from './transitions'
 
 const COUNTDOWN_SECONDS = 3
@@ -119,14 +116,16 @@ export const useTimerStore = create<TimerState>()(
               currentExerciseIndex: next.exerciseIndex,
               currentRepeat: next.repeat,
               timeRemaining: next.time,
-              totalTimeElapsed: totalTimeElapsed + 1,
+              totalTimeElapsed:
+                phase === 'countdown' ? totalTimeElapsed : totalTimeElapsed + 1,
               isRunning: next.phase !== 'complete',
             })
           }
         } else {
           set({
             timeRemaining: timeRemaining - 1,
-            totalTimeElapsed: totalTimeElapsed + 1,
+            totalTimeElapsed:
+              phase === 'countdown' ? totalTimeElapsed : totalTimeElapsed + 1,
           })
         }
       },
