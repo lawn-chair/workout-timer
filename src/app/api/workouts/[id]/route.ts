@@ -89,7 +89,7 @@ export async function PATCH(
     const validation = PatchSchema.safeParse(body)
     if (!validation.success) {
       const errors: Record<string, string> = {}
-      validation.error.errors.forEach((err) => {
+      validation.error.issues.forEach((err) => {
         const path = err.path.join('.')
         errors[path] = err.message
       })

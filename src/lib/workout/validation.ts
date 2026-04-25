@@ -26,7 +26,7 @@ export function validateWorkoutInput(data: unknown): { success: true; data: Work
   const result = WorkoutInputSchema.safeParse(data)
   if (!result.success) {
     const errors: Record<string, string> = {}
-    result.error.errors.forEach((err) => {
+    result.error.issues.forEach((err) => {
       const path = err.path.join('.')
       errors[path] = err.message
     })
