@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
+import { randomBytes } from 'crypto'
 
 export async function POST(
   request: Request,
@@ -34,7 +35,8 @@ export async function POST(
       )
     }
 
-    const slug = `${sourceWorkout.slug}-${Date.now()}`
+    const randomSuffix = randomBytes(4).toString('hex')
+    const slug = `${sourceWorkout.slug}-${randomSuffix}`
 
     const clonedWorkout = await prisma.workout.create({
       data: {
