@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
+import { WorkoutInputSchema } from '@/lib/workout/validation'
+import { z } from 'zod'
 
 async function generateUniqueSlug(
   name: string,
@@ -78,7 +80,23 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { name, description, isPublic, tags, sets } = body
+
+    const PatchSchema = WorkoutInputSchema.partial().refine(
+      (data) => Object.keys(data).length > 0,
+      'At least one field must be provided'
+    )
+
+    const validation = PatchSchema.safeParse(body)
+    if (!validation.success) {
+      const errors: Record<string, string> = {}
+      validation.error.issues.forEach((err) => {
+        const path = err.path.join('.')
+        errors[path] = err.message
+      })
+      return NextResponse.json({ error: 'Invalid input', errors }, { status: 400 })
+    }
+
+    const { name, description, isPublic, tags, sets } = validation.data
 
     const updateData: {
       name?: string
@@ -97,47 +115,49 @@ export async function PATCH(
     if (tags !== undefined) updateData.tags = tags
 
     if (sets !== undefined) {
-      await prisma.setExercise.deleteMany({
-        where: { set: { workoutId: id } },
-      })
-      await prisma.workoutSet.deleteMany({ where: { workoutId: id } })
+      await prisma.$transaction(async (tx) => {
+        await tx.setExercise.deleteMany({
+          where: { set: { workoutId: id } },
+        })
+        await tx.workoutSet.deleteMany({ where: { workoutId: id } })
 
-      const createdSets = await prisma.workoutSet.createManyAndReturn({
-        data: sets.map(
-          (
-            set: {
-              repeatCount: number
-              restBetweenExercises: number
-              restBetweenSets: number
-              exercises: { name: string; workDuration: number }[]
-            },
-            index: number
-          ) => ({
-            order: index,
-            repeatCount: set.repeatCount || 1,
-            restBetweenExercises: set.restBetweenExercises || 0,
-            restBetweenSets: set.restBetweenSets || 0,
-            workoutId: id,
-          })
-        ),
-      })
-
-      createdSets.sort((a, b) => a.order - b.order)
-
-      for (const set of createdSets) {
-        const incoming = sets[set.order]
-        if (!incoming?.exercises?.length) continue
-        await prisma.setExercise.createMany({
-          data: incoming.exercises.map(
-            (ex: { name: string; workDuration: number }, exIndex: number) => ({
-              name: ex.name,
-              workDuration: ex.workDuration || 30,
-              order: exIndex,
-              setId: set.id,
+        const createdSets = await tx.workoutSet.createManyAndReturn({
+          data: sets.map(
+            (
+              set: {
+                repeatCount: number
+                restBetweenExercises: number
+                restBetweenSets: number
+                exercises: { name: string; workDuration: number }[]
+              },
+              index: number
+            ) => ({
+              order: index,
+              repeatCount: set.repeatCount || 1,
+              restBetweenExercises: set.restBetweenExercises || 0,
+              restBetweenSets: set.restBetweenSets || 0,
+              workoutId: id,
             })
           ),
         })
-      }
+
+        createdSets.sort((a, b) => a.order - b.order)
+
+        for (const set of createdSets) {
+          const incoming = sets[set.order]
+          if (!incoming?.exercises?.length) continue
+          await tx.setExercise.createMany({
+            data: incoming.exercises.map(
+              (ex: { name: string; workDuration: number }, exIndex: number) => ({
+                name: ex.name,
+                workDuration: ex.workDuration || 30,
+                order: exIndex,
+                setId: set.id,
+              })
+            ),
+          })
+        }
+      })
     }
 
     const updatedWorkout = await prisma.workout.update({

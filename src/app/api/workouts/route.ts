@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
+import { validateWorkoutInput } from '@/lib/workout/validation'
 
 async function generateUniqueSlug(name: string): Promise<string> {
   const baseSlug = name
@@ -52,11 +53,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, description, isPublic, tags, sets } = body
-
-    if (!name) {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    const validation = validateWorkoutInput(body)
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Invalid input', errors: validation.errors }, { status: 400 })
     }
+
+    const { name, description, isPublic, tags, sets } = validation.data
 
     const slug = await generateUniqueSlug(name)
 

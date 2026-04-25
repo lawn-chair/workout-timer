@@ -5,9 +5,8 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/db'
 
 const devAuthEnabled =
-  process.env.NODE_ENV === 'development' ||
-  process.env.E2E_TESTING === 'true' ||
-  process.env.DEV_AUTH === 'true'
+  process.env.NODE_ENV === 'development' &&
+  (process.env.E2E_TESTING === 'true' || process.env.DEV_AUTH === 'true')
 
 const providers: NextAuthOptions['providers'] = []
 
