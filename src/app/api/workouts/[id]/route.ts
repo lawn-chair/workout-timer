@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
+import { WorkoutInputSchema } from '@/lib/workout/validation'
+import { z } from 'zod'
 
 async function generateUniqueSlug(
   name: string,
@@ -78,7 +80,23 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { name, description, isPublic, tags, sets } = body
+
+    const PatchSchema = WorkoutInputSchema.partial().refine(
+      (data) => Object.keys(data).length > 0,
+      'At least one field must be provided'
+    )
+
+    const validation = PatchSchema.safeParse(body)
+    if (!validation.success) {
+      const errors: Record<string, string> = {}
+      validation.error.errors.forEach((err) => {
+        const path = err.path.join('.')
+        errors[path] = err.message
+      })
+      return NextResponse.json({ error: 'Invalid input', errors }, { status: 400 })
+    }
+
+    const { name, description, isPublic, tags, sets } = validation.data
 
     const updateData: {
       name?: string
