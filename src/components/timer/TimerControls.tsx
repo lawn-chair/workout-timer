@@ -14,6 +14,11 @@ export default function TimerControls() {
     resume()
   }
 
+  const handleStop = () => {
+    if (!confirm('Stop this workout? Your progress will be lost.')) return
+    stop()
+  }
+
   if (phase === 'complete') return null
 
   return (
@@ -30,7 +35,7 @@ export default function TimerControls() {
         ) : (
           <>
             <button
-              onClick={stop}
+              onClick={handleStop}
               className="w-16 h-16 rounded-full bg-white/10 text-white text-xs uppercase tracking-[0.2em]"
               data-testid="timer-stop-button"
             >

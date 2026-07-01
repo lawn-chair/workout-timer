@@ -51,6 +51,38 @@ describe('TimerControls', () => {
     expect(screen.getByTestId('timer-skip-button')).toBeInTheDocument()
   })
 
+  it('stops the workout when the stop confirmation is accepted', () => {
+    useTimerStore.setState({ phase: 'work', isRunning: true })
+    const stopSpy = vi.spyOn(useTimerStore.getState(), 'stop')
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+
+    render(<TimerControls />)
+
+    fireEvent.click(screen.getByTestId('timer-stop-button'))
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Stop this workout? Your progress will be lost.'
+    )
+    expect(stopSpy).toHaveBeenCalled()
+
+    confirmSpy.mockRestore()
+  })
+
+  it('does not stop the workout when the stop confirmation is declined', () => {
+    useTimerStore.setState({ phase: 'work', isRunning: true })
+    const stopSpy = vi.spyOn(useTimerStore.getState(), 'stop')
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+
+    render(<TimerControls />)
+
+    fireEvent.click(screen.getByTestId('timer-stop-button'))
+
+    expect(confirmSpy).toHaveBeenCalled()
+    expect(stopSpy).not.toHaveBeenCalled()
+
+    confirmSpy.mockRestore()
+  })
+
   it('toggles pause and resume', () => {
     useTimerStore.setState({ phase: 'work', isRunning: true })
     const pauseSpy = vi.spyOn(useTimerStore.getState(), 'pause')

@@ -14,7 +14,7 @@
   --cyan: #3de7ff;
   --work: #22e06d;
   --rest: #ff5d4a;
-  --countdown: #f6c945;
+  --countdown: #8f6a15;
   --rest-sets: #ff9b2f;
   --complete: #4db5ff;
   --shadow-soft: 0 24px 60px -40px rgba(0, 0, 0, 0.8);
@@ -74,11 +74,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  font-size: var(--font-size-base, 16px);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
-  font-size: var(--font-size-base, 16px);
 }
 
 * {
@@ -192,23 +195,43 @@ body {
 }
 
 .phase-countdown {
-  background: linear-gradient(160deg, #f6c945, #c28b1e);
+  background: linear-gradient(
+    160deg,
+    var(--countdown),
+    color-mix(in srgb, var(--countdown) 70%, black)
+  );
 }
 
 .phase-work {
-  background: linear-gradient(160deg, #22e06d, #1a9f55);
+  background: linear-gradient(
+    160deg,
+    var(--work),
+    color-mix(in srgb, var(--work) 70%, black)
+  );
 }
 
 .phase-rest {
-  background: linear-gradient(160deg, #ff5d4a, #c2382f);
+  background: linear-gradient(
+    160deg,
+    var(--rest),
+    color-mix(in srgb, var(--rest) 70%, black)
+  );
 }
 
 .phase-rest-sets {
-  background: linear-gradient(160deg, #ff9b2f, #d36f13);
+  background: linear-gradient(
+    160deg,
+    var(--rest-sets),
+    color-mix(in srgb, var(--rest-sets) 70%, black)
+  );
 }
 
 .phase-complete {
-  background: linear-gradient(160deg, #4db5ff, #2a78d4);
+  background: linear-gradient(
+    160deg,
+    var(--complete),
+    color-mix(in srgb, var(--complete) 70%, black)
+  );
 }
 
 .display-font {
