@@ -52,27 +52,37 @@ export default function TimerDisplay({
 
   // Get next phase info from the shared transition function
   const nextInfo = workout
-    ? getNextPhaseInfo(workout, currentSetIndex, currentExerciseIndex, currentRepeat, phase)
+    ? getNextPhaseInfo(
+        workout,
+        currentSetIndex,
+        currentExerciseIndex,
+        currentRepeat,
+        phase
+      )
     : null
 
   const isUpcoming = phase === 'rest' || phase === 'restBetweenSets'
 
   // Derive the displayed exercise name from current state or next info
   const exerciseName = isUpcoming
-    ? (nextInfo?.nextExerciseName ?? (nextInfo === null ? 'Workout Complete!' : 'Exercise'))
-    : currentExercise?.name ?? 'Exercise'
+    ? (nextInfo?.nextExerciseName ??
+      (nextInfo === null ? 'Workout Complete!' : 'Exercise'))
+    : (currentExercise?.name ?? 'Exercise')
 
-  const setLabel = isUpcoming && nextInfo
-    ? nextInfo.nextSetLabel
-    : `Set ${currentSetIndex + 1} / ${workout?.sets.length ?? 0}`
+  const setLabel =
+    isUpcoming && nextInfo
+      ? nextInfo.nextSetLabel
+      : `Set ${currentSetIndex + 1} / ${workout?.sets.length ?? 0}`
 
-  const repLabel = isUpcoming && nextInfo
-    ? nextInfo.nextRepLabel
-    : `Rep ${currentRepeat} / ${currentSet?.repeatCount ?? 1}`
+  const repLabel =
+    isUpcoming && nextInfo
+      ? nextInfo.nextRepLabel
+      : `Rep ${currentRepeat} / ${currentSet?.repeatCount ?? 1}`
 
-  const exerciseLabel = isUpcoming && nextInfo
-    ? nextInfo.nextExerciseLabel
-    : `Exercise ${currentExerciseIndex + 1} / ${currentSet?.exercises.length ?? 0}`
+  const exerciseLabel =
+    isUpcoming && nextInfo
+      ? nextInfo.nextExerciseLabel
+      : `Exercise ${currentExerciseIndex + 1} / ${currentSet?.exercises.length ?? 0}`
 
   // Next up label shown below the timer (not shown during rest/restBetweenSets phases)
   let nextUpText: string
@@ -108,7 +118,7 @@ export default function TimerDisplay({
         ) : (
           <>
             <p
-              className="text-xs uppercase tracking-[0.45em] mb-4 text-white/80"
+              className="text-xs uppercase tracking-[0.45em] mb-4 text-white"
               data-testid="timer-phase"
             >
               {phaseLabels[phase]}

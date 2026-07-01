@@ -80,7 +80,22 @@ test.describe('Timer page', () => {
       .first()
       .click()
     await page.getByTestId('timer-start-button').click()
+    page.on('dialog', (dialog) => dialog.accept())
     await page.getByTestId('timer-stop-button').click()
     await expect(page).toHaveURL('/')
+  })
+
+  test('stop button confirmation can be dismissed to keep the workout', async ({
+    page,
+  }) => {
+    await page
+      .getByTestId(/start-workout-/)
+      .first()
+      .click()
+    await page.getByTestId('timer-start-button').click()
+    page.on('dialog', (dialog) => dialog.dismiss())
+    await page.getByTestId('timer-stop-button').click()
+    await expect(page).toHaveURL('/timer')
+    await expect(page.getByTestId('timer-display')).toBeVisible()
   })
 })
