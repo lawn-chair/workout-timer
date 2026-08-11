@@ -85,7 +85,11 @@ export default function WorkoutBuilderSets({
 
   const handleUpdateSet = (
     index: number,
-    field: 'repeatCount' | 'restBetweenExercises' | 'restBetweenSets',
+    field:
+      | 'repeatCount'
+      | 'restBetweenExercises'
+      | 'restBetweenRepeats'
+      | 'restBetweenSets',
     value: number
   ) => {
     onSetsChange((current) => updateSetField(current, index, field, value))
@@ -172,7 +176,11 @@ interface SortableSetCardProps {
   onRemove: (index: number) => void
   onUpdate: (
     index: number,
-    field: 'repeatCount' | 'restBetweenExercises' | 'restBetweenSets',
+    field:
+      | 'repeatCount'
+      | 'restBetweenExercises'
+      | 'restBetweenRepeats'
+      | 'restBetweenSets',
     value: number
   ) => void
   onAddExercise: (setIndex: number) => void
@@ -248,7 +256,7 @@ function SortableSetCard({
         )}
       </div>
 
-      <div className="grid gap-3 mb-4 md:grid-cols-3">
+      <div className="grid gap-3 mb-4 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="block text-xs text-gray-400 mb-1">
             Repeat Count
@@ -281,6 +289,25 @@ function SortableSetCard({
             min={0}
             className="w-full input-field rounded-lg px-3 py-2"
             data-testid={`rest-between-exercises-input-${setIndex}`}
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">
+            Rest Between Repeats
+          </label>
+          <input
+            type="number"
+            value={set.restBetweenRepeats}
+            onChange={(e) =>
+              onUpdate(
+                setIndex,
+                'restBetweenRepeats',
+                parseInt(e.target.value) || 0
+              )
+            }
+            min={0}
+            className="w-full input-field rounded-lg px-3 py-2"
+            data-testid={`rest-between-repeats-input-${setIndex}`}
           />
         </div>
         <div>

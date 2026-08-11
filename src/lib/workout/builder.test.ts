@@ -68,6 +68,7 @@ describe('workout builder helpers', () => {
         order: 0,
         repeatCount: 1,
         restBetweenExercises: 0,
+        restBetweenRepeats: 0,
         restBetweenSets: 0,
         exercises: [
           {

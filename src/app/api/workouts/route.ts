@@ -55,7 +55,10 @@ export async function POST(request: Request) {
     const body = await request.json()
     const validation = validateWorkoutInput(body)
     if (!validation.success) {
-      return NextResponse.json({ error: 'Invalid input', errors: validation.errors }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Invalid input', errors: validation.errors },
+        { status: 400 }
+      )
     }
 
     const { name, description, isPublic, tags, sets } = validation.data
@@ -77,6 +80,7 @@ export async function POST(request: Request) {
                   set: {
                     repeatCount: number
                     restBetweenExercises: number
+                    restBetweenRepeats: number
                     restBetweenSets: number
                     exercises: { name: string; workDuration: number }[]
                   },
@@ -85,6 +89,7 @@ export async function POST(request: Request) {
                   order: setIndex,
                   repeatCount: set.repeatCount || 1,
                   restBetweenExercises: set.restBetweenExercises || 0,
+                  restBetweenRepeats: set.restBetweenRepeats || 0,
                   restBetweenSets: set.restBetweenSets || 0,
                   exercises: {
                     create: set.exercises.map((ex, exIndex) => ({

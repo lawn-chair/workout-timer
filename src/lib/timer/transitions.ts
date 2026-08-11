@@ -10,9 +10,9 @@ export interface NextInfo {
 
   // For the display (labels)
   nextExerciseName: string | null
-  nextSetLabel: string       // e.g. "Set 2 / 3"
-  nextRepLabel: string       // e.g. "Rep 1 / 4"
-  nextExerciseLabel: string  // e.g. "Exercise 1 / 5"
+  nextSetLabel: string // e.g. "Set 2 / 3"
+  nextRepLabel: string // e.g. "Rep 1 / 4"
+  nextExerciseLabel: string // e.g. "Exercise 1 / 5"
 }
 
 function getSetAtIndex(workout: Workout, setIndex: number): WorkoutSet | null {
@@ -99,13 +99,13 @@ export function getNextPhaseInfo(
     // More repeats of this set
     if (currentRepeat < set.repeatCount) {
       const firstEx = set.exercises[0]
-      if (set.restBetweenExercises > 0) {
+      if (set.restBetweenRepeats > 0) {
         return {
           phase: 'rest',
           setIndex,
           exerciseIndex,
           repeat: currentRepeat,
-          time: set.restBetweenExercises,
+          time: set.restBetweenRepeats,
           nextExerciseName: firstEx.name,
           ...makeLabels(workout, setIndex, 0, currentRepeat + 1),
         }

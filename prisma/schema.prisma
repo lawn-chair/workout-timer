@@ -74,6 +74,7 @@ model WorkoutSet {
   order                Int
   repeatCount          Int           @default(1)
   restBetweenExercises Int           @default(0)
+  restBetweenRepeats   Int           @default(0)
   restBetweenSets      Int           @default(0)
   exercises            SetExercise[]
   workout              Workout       @relation(fields: [workoutId], references: [id], onDelete: Cascade)
