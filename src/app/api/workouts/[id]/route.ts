@@ -93,7 +93,10 @@ export async function PATCH(
         const path = err.path.join('.')
         errors[path] = err.message
       })
-      return NextResponse.json({ error: 'Invalid input', errors }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Invalid input', errors },
+        { status: 400 }
+      )
     }
 
     const { name, description, isPublic, tags, sets } = validation.data
@@ -127,6 +130,7 @@ export async function PATCH(
               set: {
                 repeatCount: number
                 restBetweenExercises: number
+                restBetweenRepeats: number
                 restBetweenSets: number
                 exercises: { name: string; workDuration: number }[]
               },
@@ -135,6 +139,7 @@ export async function PATCH(
               order: index,
               repeatCount: set.repeatCount || 1,
               restBetweenExercises: set.restBetweenExercises || 0,
+              restBetweenRepeats: set.restBetweenRepeats || 0,
               restBetweenSets: set.restBetweenSets || 0,
               workoutId: id,
             })
@@ -148,7 +153,10 @@ export async function PATCH(
           if (!incoming?.exercises?.length) continue
           await tx.setExercise.createMany({
             data: incoming.exercises.map(
-              (ex: { name: string; workDuration: number }, exIndex: number) => ({
+              (
+                ex: { name: string; workDuration: number },
+                exIndex: number
+              ) => ({
                 name: ex.name,
                 workDuration: ex.workDuration || 30,
                 order: exIndex,

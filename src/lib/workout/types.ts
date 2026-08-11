@@ -10,6 +10,7 @@ export interface WorkoutSet {
   order: number
   repeatCount: number
   restBetweenExercises: number
+  restBetweenRepeats: number
   restBetweenSets: number
   exercises: SetExercise[]
 }
@@ -34,6 +35,7 @@ export interface WorkoutFormData {
   sets: {
     repeatCount: number
     restBetweenExercises: number
+    restBetweenRepeats: number
     restBetweenSets: number
     exercises: {
       name: string

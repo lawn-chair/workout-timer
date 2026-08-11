@@ -6,6 +6,7 @@ type ExerciseInput = { name?: string; workDuration?: number }
 type SetInput = {
   repeatCount?: number
   restBetweenExercises?: number
+  restBetweenRepeats?: number
   restBetweenSets?: number
   exercises?: ExerciseInput[]
 }
@@ -18,6 +19,7 @@ const createWorkout = (sets: SetInput[]): Workout => ({
     order: setIndex,
     repeatCount: set.repeatCount ?? 1,
     restBetweenExercises: set.restBetweenExercises ?? 0,
+    restBetweenRepeats: set.restBetweenRepeats ?? 0,
     restBetweenSets: set.restBetweenSets ?? 0,
     exercises: (set.exercises ?? [{ workDuration: 30 }]).map((ex, exIndex) => ({
       id: `${setIndex + 1}-${exIndex + 1}`,
@@ -240,7 +242,7 @@ describe('useTimerStore', () => {
       const workout = createWorkout([
         {
           repeatCount: 2,
-          restBetweenExercises: 3,
+          restBetweenRepeats: 3,
           restBetweenSets: 0,
           exercises: [{ name: 'Push-ups', workDuration: 1 }],
         },
@@ -326,7 +328,7 @@ describe('useTimerStore', () => {
       const workout = createWorkout([
         {
           repeatCount: 2,
-          restBetweenExercises: 1,
+          restBetweenRepeats: 1,
           restBetweenSets: 0,
           exercises: [{ name: 'Push-ups', workDuration: 1 }],
         },

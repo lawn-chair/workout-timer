@@ -123,6 +123,12 @@ export default function PublicWorkoutView({ workout }: { workout: Workout }) {
                           </span>
                         </>
                       )}
+                      {set.restBetweenRepeats > 0 && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>{set.restBetweenRepeats}s between repeats</span>
+                        </>
+                      )}
                       {set.restBetweenSets > 0 && (
                         <>
                           <span className="mx-2">•</span>

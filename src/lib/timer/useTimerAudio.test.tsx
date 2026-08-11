@@ -9,6 +9,7 @@ type ExerciseInput = { name?: string; workDuration?: number }
 type SetInput = {
   repeatCount?: number
   restBetweenExercises?: number
+  restBetweenRepeats?: number
   restBetweenSets?: number
   exercises?: ExerciseInput[]
 }
@@ -21,6 +22,7 @@ const createWorkout = (sets: SetInput[]): Workout => ({
     order: setIndex,
     repeatCount: set.repeatCount ?? 1,
     restBetweenExercises: set.restBetweenExercises ?? 0,
+    restBetweenRepeats: set.restBetweenRepeats ?? 0,
     restBetweenSets: set.restBetweenSets ?? 0,
     exercises: (set.exercises ?? [{ workDuration: 30 }]).map((ex, exIndex) => ({
       id: `${setIndex + 1}-${exIndex + 1}`,
@@ -42,7 +44,9 @@ vi.mock('./audio', () => ({
 
 import { audioManager } from './audio'
 
-function TestComponent({ prefs }: { prefs?: Parameters<typeof useTimerAudio>[0] } = {}) {
+function TestComponent({
+  prefs,
+}: { prefs?: Parameters<typeof useTimerAudio>[0] } = {}) {
   useTimerAudio(prefs)
   const { phase, isRunning, timeRemaining } = useTimerStore()
   return (
@@ -223,7 +227,11 @@ describe('useTimerAudio', () => {
       { exercises: [{ name: 'Push-ups', workDuration: 30 }] },
     ])
     useTimerStore.getState().loadWorkout(workout)
-    useTimerStore.setState({ phase: 'work', timeRemaining: 30, isRunning: true })
+    useTimerStore.setState({
+      phase: 'work',
+      timeRemaining: 30,
+      isRunning: true,
+    })
 
     render(
       <TestComponent
@@ -237,6 +245,44 @@ describe('useTimerAudio', () => {
     )
 
     expect(audioManager.playWorkStart).not.toHaveBeenCalled()
+  })
+
+  it('should play work start again on each exercise within a group even though phase stays work', () => {
+    const workout = createWorkout([
+      {
+        repeatCount: 1,
+        restBetweenExercises: 0,
+        restBetweenSets: 0,
+        exercises: [
+          { name: 'Push-ups', workDuration: 30 },
+          { name: 'Squats', workDuration: 30 },
+          { name: 'Lunges', workDuration: 30 },
+        ],
+      },
+    ])
+    useTimerStore.getState().loadWorkout(workout)
+    useTimerStore.setState({
+      phase: 'work',
+      currentExerciseIndex: 0,
+      timeRemaining: 30,
+      isRunning: true,
+    })
+
+    const { rerender } = render(<TestComponent />)
+    expect(audioManager.playWorkStart).toHaveBeenCalledTimes(1)
+
+    vi.clearAllMocks()
+
+    // Back-to-back exercise: phase stays 'work', only the index changes.
+    useTimerStore.setState({ currentExerciseIndex: 1, timeRemaining: 30 })
+    rerender(<TestComponent />)
+    expect(audioManager.playWorkStart).toHaveBeenCalledTimes(1)
+
+    vi.clearAllMocks()
+
+    useTimerStore.setState({ currentExerciseIndex: 2, timeRemaining: 30 })
+    rerender(<TestComponent />)
+    expect(audioManager.playWorkStart).toHaveBeenCalledTimes(1)
   })
 
   it('should only play phase change audio once on subsequent renders', () => {

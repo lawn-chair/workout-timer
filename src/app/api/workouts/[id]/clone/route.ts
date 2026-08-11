@@ -51,6 +51,7 @@ export async function POST(
             order: set.order,
             repeatCount: set.repeatCount,
             restBetweenExercises: set.restBetweenExercises,
+            restBetweenRepeats: set.restBetweenRepeats,
             restBetweenSets: set.restBetweenSets,
             exercises: {
               create: set.exercises.map((ex) => ({

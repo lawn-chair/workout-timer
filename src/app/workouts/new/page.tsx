@@ -29,12 +29,16 @@ export default function NewWorkoutPage() {
     const data: WorkoutFormData = {
       name: name.trim(),
       description: description.trim() || undefined,
-      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+      tags: tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
       isPublic,
       sets: sets
         .map((set) => ({
           repeatCount: Math.max(set.repeatCount, 1),
           restBetweenExercises: Math.max(set.restBetweenExercises, 0),
+          restBetweenRepeats: Math.max(set.restBetweenRepeats, 0),
           restBetweenSets: Math.max(set.restBetweenSets, 0),
           exercises: set.exercises
             .filter((ex) => ex.name.trim())

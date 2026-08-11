@@ -6,6 +6,7 @@ type ExerciseInput = { name?: string; workDuration?: number }
 type SetInput = {
   repeatCount?: number
   restBetweenExercises?: number
+  restBetweenRepeats?: number
   restBetweenSets?: number
   exercises?: ExerciseInput[]
 }
@@ -18,6 +19,7 @@ const createWorkout = (sets: SetInput[]): Workout => ({
     order: setIndex,
     repeatCount: set.repeatCount ?? 1,
     restBetweenExercises: set.restBetweenExercises ?? 0,
+    restBetweenRepeats: set.restBetweenRepeats ?? 0,
     restBetweenSets: set.restBetweenSets ?? 0,
     exercises: (set.exercises ?? [{ workDuration: 30 }]).map((ex, exIndex) => ({
       id: `${setIndex + 1}-${exIndex + 1}`,
@@ -117,12 +119,68 @@ describe('getNextPhaseInfo', () => {
     })
   })
 
+  describe('grouped exercises: no rest within a round, rest between rounds', () => {
+    it('runs all exercises in a round back-to-back with no rest, then rests once before repeating', () => {
+      const workout = createWorkout([
+        {
+          repeatCount: 2,
+          restBetweenExercises: 0,
+          restBetweenRepeats: 15,
+          exercises: [
+            { name: 'Push-ups', workDuration: 30 },
+            { name: 'Squats', workDuration: 20 },
+            { name: 'Lunges', workDuration: 25 },
+          ],
+        },
+      ])
+
+      // Exercise 1 → 2: no rest, straight into work
+      let next = getNextPhaseInfo(workout, 0, 0, 1, 'work')
+      expect(next?.phase).toBe('work')
+      expect(next?.exerciseIndex).toBe(1)
+      expect(next?.nextExerciseName).toBe('Squats')
+
+      // Exercise 2 → 3: no rest, straight into work
+      next = getNextPhaseInfo(workout, 0, 1, 1, 'work')
+      expect(next?.phase).toBe('work')
+      expect(next?.exerciseIndex).toBe(2)
+      expect(next?.nextExerciseName).toBe('Lunges')
+
+      // Exercise 3 (last in round 1) → single rest before round 2
+      next = getNextPhaseInfo(workout, 0, 2, 1, 'work')
+      expect(next?.phase).toBe('rest')
+      expect(next?.time).toBe(15)
+      expect(next?.nextExerciseName).toBe('Push-ups')
+      expect(next?.nextRepLabel).toBe('Rep 2 / 2')
+
+      // Rest resolves into exercise 1 of round 2
+      next = getNextPhaseInfo(workout, 0, 2, 1, 'rest')
+      expect(next?.phase).toBe('work')
+      expect(next?.exerciseIndex).toBe(0)
+      expect(next?.repeat).toBe(2)
+      expect(next?.nextExerciseName).toBe('Push-ups')
+    })
+
+    it('does not rest after the final round completes', () => {
+      const workout = createWorkout([
+        {
+          repeatCount: 2,
+          restBetweenExercises: 0,
+          restBetweenRepeats: 15,
+          exercises: [{ name: 'Push-ups', workDuration: 30 }],
+        },
+      ])
+      const next = getNextPhaseInfo(workout, 0, 0, 2, 'work')
+      expect(next?.phase).toBe('complete')
+    })
+  })
+
   describe('work → next repeat', () => {
-    it('transitions to rest before repeat when restBetweenExercises > 0', () => {
+    it('transitions to rest before repeat when restBetweenRepeats > 0', () => {
       const workout = createWorkout([
         {
           repeatCount: 3,
-          restBetweenExercises: 15,
+          restBetweenRepeats: 15,
           exercises: [{ name: 'Push-ups', workDuration: 30 }],
         },
       ])
@@ -134,11 +192,11 @@ describe('getNextPhaseInfo', () => {
       expect(next?.nextRepLabel).toBe('Rep 2 / 3')
     })
 
-    it('skips rest and goes directly to next repeat when restBetweenExercises is 0', () => {
+    it('skips rest and goes directly to next repeat when restBetweenRepeats is 0', () => {
       const workout = createWorkout([
         {
           repeatCount: 2,
-          restBetweenExercises: 0,
+          restBetweenRepeats: 0,
           exercises: [{ name: 'Push-ups', workDuration: 30 }],
         },
       ])

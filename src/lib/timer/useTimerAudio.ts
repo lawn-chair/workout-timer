@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useTimerStore } from '@/lib/timer/store'
 import { audioManager } from './audio'
-import { TimerPhase } from './types'
 
 export interface AudioPreferences {
   countdownBeeps: boolean
@@ -18,14 +17,25 @@ const defaultPrefs: AudioPreferences = {
 }
 
 export function useTimerAudio(prefs: AudioPreferences = defaultPrefs) {
-  const { phase, timeRemaining, isRunning } = useTimerStore()
-  const prevPhaseRef = useRef<TimerPhase>('idle')
+  const {
+    phase,
+    timeRemaining,
+    isRunning,
+    currentSetIndex,
+    currentExerciseIndex,
+    currentRepeat,
+  } = useTimerStore()
+  const prevStepKeyRef = useRef<string>('idle')
   const prevTimeRef = useRef<number>(0)
 
   useEffect(() => {
     if (!isRunning) return
 
-    if (phase !== prevPhaseRef.current) {
+    // Keyed on phase + position, not just phase, so back-to-back exercises
+    // within a set (phase stays 'work' when restBetweenExercises is 0) still
+    // retrigger the work-start cue for each new exercise.
+    const stepKey = `${phase}-${currentSetIndex}-${currentExerciseIndex}-${currentRepeat}`
+    if (stepKey !== prevStepKeyRef.current) {
       switch (phase) {
         case 'countdown':
           if (prefs.countdownBeeps) audioManager.playCountdown()
@@ -41,7 +51,7 @@ export function useTimerAudio(prefs: AudioPreferences = defaultPrefs) {
           if (prefs.completionChime) audioManager.playComplete()
           break
       }
-      prevPhaseRef.current = phase
+      prevStepKeyRef.current = stepKey
     }
 
     if (
@@ -54,5 +64,13 @@ export function useTimerAudio(prefs: AudioPreferences = defaultPrefs) {
     }
 
     prevTimeRef.current = timeRemaining
-  }, [phase, timeRemaining, isRunning, prefs])
+  }, [
+    phase,
+    timeRemaining,
+    isRunning,
+    currentSetIndex,
+    currentExerciseIndex,
+    currentRepeat,
+    prefs,
+  ])
 }

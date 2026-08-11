@@ -11,6 +11,7 @@ export interface SetDraft {
   clientId: string
   repeatCount: number
   restBetweenExercises: number
+  restBetweenRepeats: number
   restBetweenSets: number
   exercises: ExerciseDraft[]
 }
@@ -33,6 +34,7 @@ export const createSet = (overrides: Partial<SetDraft> = {}): SetDraft => ({
   clientId: createClientId('set'),
   repeatCount: 1,
   restBetweenExercises: 0,
+  restBetweenRepeats: 0,
   restBetweenSets: 0,
   exercises: [createExercise()],
   ...overrides,
@@ -43,6 +45,7 @@ export const hydrateWorkoutSets = (sets: Workout['sets']): SetDraft[] =>
     clientId: createClientId('set'),
     repeatCount: set.repeatCount,
     restBetweenExercises: set.restBetweenExercises,
+    restBetweenRepeats: set.restBetweenRepeats,
     restBetweenSets: set.restBetweenSets,
     exercises: set.exercises.map((exercise) =>
       createExercise({
@@ -60,7 +63,11 @@ export const removeSet = (sets: SetDraft[], index: number): SetDraft[] =>
 export const updateSetField = (
   sets: SetDraft[],
   index: number,
-  field: 'repeatCount' | 'restBetweenExercises' | 'restBetweenSets',
+  field:
+    | 'repeatCount'
+    | 'restBetweenExercises'
+    | 'restBetweenRepeats'
+    | 'restBetweenSets',
   value: number
 ): SetDraft[] =>
   sets.map((set, i) => (i === index ? { ...set, [field]: value } : set))

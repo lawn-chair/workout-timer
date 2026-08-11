@@ -51,6 +51,7 @@ const makeSets = (): SetDraft[] => [
     clientId: 'set-a',
     repeatCount: 1,
     restBetweenExercises: 0,
+    restBetweenRepeats: 0,
     restBetweenSets: 0,
     exercises: [
       { clientId: 'ex-a1', name: 'Jumping Jacks', workDuration: 30 },
@@ -61,6 +62,7 @@ const makeSets = (): SetDraft[] => [
     clientId: 'set-b',
     repeatCount: 2,
     restBetweenExercises: 10,
+    restBetweenRepeats: 0,
     restBetweenSets: 20,
     exercises: [
       { clientId: 'ex-b1', name: 'Planks', workDuration: 45 },
@@ -112,6 +114,10 @@ describe('WorkoutBuilderSets', () => {
       target: { value: '15' },
     })
 
+    fireEvent.change(screen.getByTestId('rest-between-repeats-input-0'), {
+      target: { value: '25' },
+    })
+
     fireEvent.change(screen.getByTestId('rest-between-sets-input-0'), {
       target: { value: '20' },
     })
@@ -126,6 +132,7 @@ describe('WorkoutBuilderSets', () => {
 
     expect(screen.getByTestId('set-repeat-input-0')).toHaveValue(3)
     expect(screen.getByTestId('rest-between-exercises-input-0')).toHaveValue(15)
+    expect(screen.getByTestId('rest-between-repeats-input-0')).toHaveValue(25)
     expect(screen.getByTestId('rest-between-sets-input-0')).toHaveValue(20)
     expect(screen.getByTestId('exercise-name-input-0-0')).toHaveValue('Lunges')
     expect(screen.getByTestId('exercise-work-input-0-0')).toHaveValue(45)
@@ -203,6 +210,7 @@ describe('WorkoutBuilderSets', () => {
         clientId: 'set-empty',
         repeatCount: 1,
         restBetweenExercises: 0,
+        restBetweenRepeats: 0,
         restBetweenSets: 0,
         exercises: [],
       },
@@ -221,6 +229,7 @@ describe('WorkoutBuilderSets', () => {
         clientId: 'set-only',
         repeatCount: 1,
         restBetweenExercises: 0,
+        restBetweenRepeats: 0,
         restBetweenSets: 0,
         exercises: [
           { clientId: 'ex-only', name: 'Push Ups', workDuration: 30 },

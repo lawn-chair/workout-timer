@@ -9,6 +9,7 @@ export interface WorkoutSet {
   order: number
   repeatCount: number
   restBetweenExercises: number
+  restBetweenRepeats: number
   restBetweenSets: number
   exercises: SetExercise[]
 }
@@ -21,12 +22,7 @@ export interface Workout {
 }
 
 export type TimerPhase =
-  | 'idle'
-  | 'countdown'
-  | 'work'
-  | 'rest'
-  | 'restBetweenSets'
-  | 'complete'
+  'idle' | 'countdown' | 'work' | 'rest' | 'restBetweenSets' | 'complete'
 
 export interface TimerState {
   workout: Workout | null
@@ -58,7 +54,7 @@ export function getTotalWorkoutTime(workout: Workout): number {
     const setTime = exerciseWork + restBetweenExercisesTime
     const repeatCount = Math.max(set.repeatCount, 1)
     const restBetweenRepeatsTime =
-      Math.max(repeatCount - 1, 0) * set.restBetweenExercises
+      Math.max(repeatCount - 1, 0) * set.restBetweenRepeats
     const repeatedTime = setTime * repeatCount + restBetweenRepeatsTime
     const restBetweenSetsTime =
       setIndex < workout.sets.length - 1

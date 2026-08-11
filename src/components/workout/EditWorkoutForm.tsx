@@ -52,6 +52,7 @@ export default function EditWorkoutForm({
         .map((set) => ({
           repeatCount: Math.max(set.repeatCount, 1),
           restBetweenExercises: Math.max(set.restBetweenExercises, 0),
+          restBetweenRepeats: Math.max(set.restBetweenRepeats, 0),
           restBetweenSets: Math.max(set.restBetweenSets, 0),
           exercises: set.exercises
             .filter((ex) => ex.name.trim())
